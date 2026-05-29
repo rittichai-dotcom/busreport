@@ -1,1 +1,867 @@
-{"error":"usage_exceeded","message":"Usage exceeded","request_id":"01KSSNV9AWC9EVVZXXRJG2HAJ3"}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>รายงานงานติดตั้ง — Plan B Media</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+  :root {
+    --bg: #f5f5f5; --card: #ffffff; --border: #e0e0e0;
+    --text: #1a1a2e; --muted: #6b6b80; --accent: #1a1a2e;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .page { max-width: 480px; margin: 0 auto; padding: 16px 16px 40px; }
+
+  .header { display: flex; align-items: center; gap: 12px; background: var(--accent); color: #fff; padding: 14px 16px; border-radius: var(--radius); margin-bottom: 16px; }
+  .header .logo { width: 38px; height: 38px; border-radius: 8px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; }
+  .header h1 { font-size: 15px; font-weight: 600; }
+  .header p  { font-size: 12px; opacity: 0.7; margin-top: 1px; }
+
+  .card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); padding: 16px; margin-bottom: 12px; }
+
+  label { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-bottom: 6px; }
+  label .req { color: #D85A30; }
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+
+  input[type=text] {
+    width: 100%; height: 48px; border-radius: 8px;
+    border: 1px solid var(--border); background: #fafafa;
+    color: var(--text); font-size: 16px; font-family: 'Sarabun', sans-serif;
+    padding: 0 14px; touch-action: manipulation; cursor: pointer;
+  }
+  input[type=text]:focus {
+    outline: none; border-color: #378ADD;
+    box-shadow: 0 0 0 3px rgba(55,138,221,0.12); background: #fff;
+  }
+
+  /* Fake select — ใช้แทน native select สำหรับ depot และ mediatype */
+  .fake-select {
+    width: 100%; height: 48px; border-radius: 8px;
+    border: 1px solid var(--border); background: #fafafa;
+    color: var(--text); font-size: 16px; font-family: 'Sarabun', sans-serif;
+    padding: 0 40px 0 14px; cursor: pointer;
+    display: flex; align-items: center;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6b80' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    user-select: none; -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  }
+  .fake-select.placeholder { color: var(--muted); }
+  .fake-select:active { border-color: #378ADD; background-color: #fff; }
+
+  /* Native select ซ่อนไว้ แต่ยังเก็บ value */
+  select.hidden-select { display: none; }
+
+  /* select ใน detail-box (swapReason, cancelReason) — ยังใช้ native เพราะ options น้อย */
+  .detail-box select {
+    width: 100%; border-radius: 8px; border: 1px solid var(--border);
+    background: #fff; color: var(--text); font-size: 14px;
+    font-family: 'Sarabun', sans-serif; padding: 8px 12px;
+    height: 40px;
+    -webkit-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6b80' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+  .detail-box select:focus {
+    outline: none; border-color: #378ADD; box-shadow: 0 0 0 3px rgba(55,138,221,0.12);
+  }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .status-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .status-card {
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 6px; text-align: center; cursor: pointer;
+    background: #fafafa; transition: all 0.15s ease;
+    user-select: none; -webkit-tap-highlight-color: transparent;
+  }
+  .status-card i    { font-size: 22px; display: block; margin-bottom: 5px; color: var(--muted); }
+  .status-card span { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .status-card.s-install { border-color: #1D9E75; background: #E1F5EE; }
+  .status-card.s-install i, .status-card.s-install span { color: #0F6E56; }
+  .status-card.s-swap    { border-color: #185FA5; background: #E6F1FB; }
+  .status-card.s-swap i,  .status-card.s-swap span    { color: #185FA5; }
+  .status-card.s-cancel  { border-color: #993C1D; background: #FAECE7; }
+  .status-card.s-cancel i,.status-card.s-cancel span  { color: #993C1D; }
+
+  .detail-box {
+    display: none; margin-top: 12px; border-radius: 8px; padding: 12px 14px;
+    border: 1px solid var(--border); background: #fafafa;
+    animation: slideDown 0.18s ease;
+  }
+  .detail-box.show        { display: block; }
+  .detail-box.swap-detail   { border-color: #85B7EB; background: #EBF4FD; }
+  .detail-box.cancel-detail { border-color: #F0997B; background: #FDF3EF; }
+  .detail-box label              { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+  .detail-box.swap-detail label  { color: #185FA5; }
+  .detail-box.cancel-detail label{ color: #993C1D; }
+  .detail-box .sub-label { font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+  .detail-box input[type=text], .detail-box textarea {
+    width: 100%; border-radius: 8px; border: 1px solid var(--border);
+    background: #fff; color: var(--text); font-size: 14px;
+    font-family: 'Sarabun', sans-serif; padding: 8px 12px;
+  }
+  .detail-box textarea { height: 72px; resize: none; line-height: 1.5; }
+  .detail-box input[type=text]:focus, .detail-box select:focus, .detail-box textarea:focus {
+    outline: none; border-color: #378ADD; box-shadow: 0 0 0 3px rgba(55,138,221,0.12); background: #fff;
+  }
+  .detail-field { margin-bottom: 10px; }
+  .detail-field:last-child { margin-bottom: 0; }
+  @keyframes slideDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+
+  .photo-zone {
+    border: 1.5px dashed var(--border); border-radius: 8px;
+    padding: 20px 14px; text-align: center; cursor: pointer;
+    background: #fafafa; position: relative; transition: border-color 0.15s;
+  }
+  .photo-zone:active { border-color: #378ADD; }
+  .photo-zone input  { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .photo-zone i      { font-size: 32px; color: var(--muted); display: block; margin-bottom: 6px; }
+  .photo-zone p      { font-size: 13px; color: var(--muted); font-weight: 500; }
+  .photo-zone small  { font-size: 11px; color: #aaa; }
+
+  .preview-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+  .preview-item { position: relative; aspect-ratio: 1; }
+  .preview-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
+  .preview-item .rm { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%; background: #E24B4A; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .preview-item .rm i { font-size: 11px; color: #fff; }
+
+  .path-box { background: #f0f4ff; border: 1px solid #c8d8f0; border-radius: 8px; padding: 8px 12px; margin-top: 10px; font-size: 12px; color: #185FA5; display: flex; align-items: center; gap: 6px; }
+  .path-box i { font-size: 14px; flex-shrink: 0; }
+
+  .submit-btn {
+    width: 100%; height: 50px; border-radius: var(--radius); border: none;
+    background: var(--accent); color: #fff; font-size: 16px; font-weight: 600;
+    font-family: 'Sarabun', sans-serif; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: opacity 0.15s; margin-top: 4px;
+  }
+  .submit-btn:active   { opacity: 0.85; transform: scale(0.99); }
+  .submit-btn:disabled { background: #aaa; cursor: not-allowed; }
+  .submit-btn i { font-size: 18px; }
+
+  .toast {
+    display: none; position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%); background: #1D9E75; color: #fff;
+    padding: 12px 24px; border-radius: 24px; font-size: 14px;
+    font-weight: 500; z-index: 999; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    white-space: nowrap;
+  }
+  .toast.error { background: #A32D2D; }
+
+  .loading-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    z-index: 998; align-items: center; justify-content: center; flex-direction: column; gap: 12px;
+  }
+  .loading-overlay.show { display: flex; }
+  .spinner { width: 36px; height: 36px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-overlay p { color: #fff; font-size: 14px; font-weight: 500; }
+
+  /* ── ประเภทงาน ── */
+  .jobtype-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .jobtype-card {
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 10px; text-align: center; cursor: pointer;
+    background: #fafafa; transition: all 0.15s ease;
+    user-select: none; -webkit-tap-highlight-color: transparent;
+    font-size: 13px; font-weight: 500; color: var(--muted);
+  }
+  .jobtype-card.active { border-color: #1a1a2e; background: #1a1a2e; color: #fff; }
+
+  /* ── สภาพตัวถัง checkboxes ── */
+  .condition-section { margin-bottom: 10px; }
+  .condition-section:last-child { margin-bottom: 0; }
+  .condition-label { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  .checkbox-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .cb-item {
+    display: flex; align-items: center; gap: 6px; cursor: pointer;
+    padding: 10px 8px; border-radius: 8px; border: 1px solid var(--border);
+    background: #fafafa; transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none; -webkit-user-select: none;
+  }
+  .cb-box {
+    width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--border);
+    background: #fff; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .cb-item.checked { border-color: #D85A30; background: #FDF3EF; }
+  .cb-item.checked .cb-box { background: #D85A30; border-color: #D85A30; }
+  .cb-item.checked .cb-box::after { content: '✓'; color: #fff; font-size: 11px; font-weight: 700; }
+  .cb-item span { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .cb-item.checked span { color: #993C1D; }
+
+  /* ── Modal Picker ── */
+  .modal-picker-overlay {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.5); align-items: flex-end;
+  }
+  .modal-picker-overlay.open { display: flex; }
+  .modal-picker-sheet {
+    background: #fff; border-radius: 20px 20px 0 0;
+    width: 100%; max-height: 80vh; display: flex; flex-direction: column;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .modal-picker-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px 8px; border-bottom: 1px solid #eee;
+  }
+  .modal-picker-header h3 { font-size: 16px; font-weight: 600; color: #1a1a2e; }
+  .modal-picker-close {
+    background: none; border: none; font-size: 22px; cursor: pointer;
+    color: #6b6b80; padding: 4px 8px; border-radius: 6px;
+  }
+  .modal-picker-search {
+    margin: 10px 16px; padding: 10px 14px; border-radius: 10px;
+    border: 1px solid #e0e0e0; font-size: 15px; font-family: 'Sarabun', sans-serif;
+    width: calc(100% - 32px); box-sizing: border-box; outline: none;
+    background: #f5f5f5;
+  }
+  .modal-picker-search:focus { border-color: #378ADD; background: #fff; }
+  .modal-picker-list {
+    overflow-y: auto; flex: 1;
+    padding: 6px 10px 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .modal-picker-item {
+    padding: 13px 16px; border-radius: 10px; cursor: pointer;
+    font-size: 15px; font-family: 'Sarabun', sans-serif; color: #1a1a2e;
+    transition: background 0.12s; margin-bottom: 2px;
+    border: 1px solid transparent;
+  }
+  .modal-picker-item:active { background: #e8f1fb; }
+  .modal-picker-item.selected {
+    background: #e8f1fb; border-color: #378ADD; color: #378ADD; font-weight: 600;
+  }
+  .modal-picker-item.placeholder { color: #9999aa; }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <p id="loadingText">กำลังส่งข้อมูล...</p>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- Modal Picker: อู่ -->
+<div class="modal-picker-overlay" id="depotPickerOverlay">
+  <div class="modal-picker-sheet">
+    <div class="modal-picker-header">
+      <h3>เลือกอู่</h3>
+      <button class="modal-picker-close" onclick="closeDepotPicker()">✕</button>
+    </div>
+    <input class="modal-picker-search" id="depotSearch" placeholder="🔍 ค้นหาอู่..." oninput="filterDepot(this.value)">
+    <div class="modal-picker-list" id="depotList"></div>
+  </div>
+</div>
+
+<!-- Modal Picker: Media Type -->
+<div class="modal-picker-overlay" id="mediatypePickerOverlay">
+  <div class="modal-picker-sheet">
+    <div class="modal-picker-header">
+      <h3>เลือก Media Type</h3>
+      <button class="modal-picker-close" onclick="closeMediatypePicker()">✕</button>
+    </div>
+    <div class="modal-picker-list" id="mediatypeList"></div>
+  </div>
+</div>
+
+<div class="page">
+
+  <div class="header">
+    <div class="logo">PB</div>
+    <div>
+      <h1>รายงานงานติดตั้ง</h1>
+      <p>Street-Bus Division · Plan B Media</p>
+    </div>
+  </div>
+
+  <!-- ประเภทงาน -->
+  <div class="card">
+    <label>ประเภทงาน <span class="req">*</span></label>
+    <div class="jobtype-grid">
+      <div class="jobtype-card" onclick="selectJobType(this,'install')">งานติดตั้ง</div>
+      <div class="jobtype-card" onclick="selectJobType(this,'peel')">งานลอก</div>
+      <div class="jobtype-card" onclick="selectJobType(this,'inspect')">งานตรวจรถ</div>
+      <div class="jobtype-card" onclick="selectJobType(this,'demo')">งาน Demo&amp;Events</div>
+    </div>
+  </div>
+
+  <!-- ข้อมูลงาน -->
+  <div class="card">
+    <div class="field">
+      <label>อู่ <span class="req">*</span></label>
+      <!-- Fake select: กด onclick เปิด modal โดยตรง ไม่พึ่ง touch event propagation -->
+      <div class="fake-select placeholder" id="depotDisplay" onclick="openDepotPicker()">— เลือกอู่ —</div>
+      <select id="depot" class="hidden-select">
+        <option value="">— เลือกอู่ —</option>
+        <option>กัลปพฤกษ์</option>
+        <option>กัลปพฤกษ์EV</option>
+        <option>กำแพงเพชร</option>
+        <option>คลองเตย</option>
+        <option>เคหะธนฯEV</option>
+        <option>เคหะบางพลี (ใหม่)EV</option>
+        <option>ช้างเอราวัณ</option>
+        <option>ตลิ่งชันEV</option>
+        <option>ท่าอิฐ</option>
+        <option>ท่าอิฐEV</option>
+        <option>เทศบาลบางบัวทอง</option>
+        <option>ธรรมศาสตร์รังสิต</option>
+        <option>บรมราชชนนี</option>
+        <option>บ่อดิน</option>
+        <option>บางเขน</option>
+        <option>บึงกุ่มEV</option>
+        <option>ปากเกร็ดEV</option>
+        <option>ปากน้ำEV</option>
+        <option>ปู่เจ้าสมิงพราย</option>
+        <option>พระประแดง</option>
+        <option>พระรามเก้า</option>
+        <option>พรานนกEV</option>
+        <option>พุทธบูชาEV</option>
+        <option>ฟาร์มจระเข้</option>
+        <option>มีนบุรี</option>
+        <option>มีนบุรี หนองจอกEV</option>
+        <option>มีนบุรีEV</option>
+        <option>เมกาบางนา</option>
+        <option>รังสิต</option>
+        <option>รังสิต 200 ปีEV</option>
+        <option>รังสิต คลอง 6EV</option>
+        <option>รังสิต บางพูนEV</option>
+        <option>ราม 2EV</option>
+        <option>รามคำแหง 74EV</option>
+        <option>ราษฎร์บูรณะEV</option>
+        <option>ไร่ขิงEV</option>
+        <option>เลี่ยงเมืองนนท์EV</option>
+        <option>เลียบทางด่วนรามอินทรา</option>
+        <option>วัดไร่ขิง</option>
+        <option>ศาลายาEV</option>
+        <option>สวนสยาม</option>
+        <option>สายใต้ใหม่EV</option>
+        <option>สุพรรณยานยนต์EV</option>
+        <option>แสมดำ</option>
+        <option>แสมดำEV</option>
+        <option>เอกชัยEV</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>ทะเบียนรถ <span class="req">*</span></label>
+      <input type="text" id="plate" placeholder="เช่น 16-8217" maxlength="12" autocomplete="off">
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label>สายรถ</label>
+        <input type="text" id="route" placeholder="เช่น 8, 39, 104" maxlength="20" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>หมายเลขรถ</label>
+        <input type="text" id="busnum" placeholder="เช่น 2085" maxlength="10" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>ชื่อสินค้า <span class="req">*</span></label>
+      <input type="text" id="product" placeholder="เช่น Coca-Cola, Central Pattana" maxlength="80" autocomplete="off">
+    </div>
+
+    <div class="field" style="margin-bottom:0">
+      <label>Media Type <span class="req">*</span></label>
+      <!-- Fake select: กด onclick เปิด modal โดยตรง -->
+      <div class="fake-select placeholder" id="mediatypeDisplay" onclick="openMediatypePicker()">— เลือก Media Type —</div>
+      <select id="mediatype" class="hidden-select">
+        <option value="">— เลือก Media Type —</option>
+        <option>BusWrap</option>
+        <option>MuvAds</option>
+        <option>NCA_Bus</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- สภาพตัวถัง -->
+  <div class="card">
+    <label>สภาพตัวถัง <span style="font-size:11px;color:var(--muted);font-weight:400">(เลือกได้หลายข้อ)</span></label>
+    <div class="condition-section">
+      <div class="condition-label">🎨 สีหลุด</div>
+      <div class="checkbox-grid">
+        <div class="cb-item" id="cb-si-B" onclick="toggleCb('cb-si-B','color','ด้านหลัง')">
+          <div class="cb-box"></div><span>ด้านหลัง</span>
+        </div>
+        <div class="cb-item" id="cb-si-L" onclick="toggleCb('cb-si-L','color','ด้านซ้าย')">
+          <div class="cb-box"></div><span>ด้านซ้าย</span>
+        </div>
+        <div class="cb-item" id="cb-si-R" onclick="toggleCb('cb-si-R','color','ด้านขวา')">
+          <div class="cb-box"></div><span>ด้านขวา</span>
+        </div>
+        <div class="cb-item" id="cb-si-N" onclick="toggleCb('cb-si-N','color','ปกติ')">
+          <div class="cb-box"></div><span>ปกติ</span>
+        </div>
+      </div>
+    </div>
+    <div class="condition-section">
+      <div class="condition-label">💥 ตัวถังผุ</div>
+      <div class="checkbox-grid">
+        <div class="cb-item" id="cb-tu-B" onclick="toggleCb('cb-tu-B','body','ด้านหลัง')">
+          <div class="cb-box"></div><span>ด้านหลัง</span>
+        </div>
+        <div class="cb-item" id="cb-tu-L" onclick="toggleCb('cb-tu-L','body','ด้านซ้าย')">
+          <div class="cb-box"></div><span>ด้านซ้าย</span>
+        </div>
+        <div class="cb-item" id="cb-tu-R" onclick="toggleCb('cb-tu-R','body','ด้านขวา')">
+          <div class="cb-box"></div><span>ด้านขวา</span>
+        </div>
+        <div class="cb-item" id="cb-tu-N" onclick="toggleCb('cb-tu-N','body','ปกติ')">
+          <div class="cb-box"></div><span>ปกติ</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- สถานะงาน -->
+  <div class="card">
+    <label>สถานะงาน <span class="req">*</span></label>
+    <div class="status-grid">
+      <div class="status-card" onclick="selectStatus(this,'install','s-install')">
+        <i class="ti ti-circle-check" aria-hidden="true"></i>
+        <span>ติดตั้งสำเร็จ</span>
+      </div>
+      <div class="status-card" onclick="selectStatus(this,'swap','s-swap')">
+        <i class="ti ti-arrows-exchange" aria-hidden="true"></i>
+        <span>เปลี่ยนคัน</span>
+      </div>
+      <div class="status-card" onclick="selectStatus(this,'cancel','s-cancel')">
+        <i class="ti ti-x" aria-hidden="true"></i>
+        <span>ยกเลิก</span>
+      </div>
+    </div>
+
+    <!-- detail: เปลี่ยนคัน -->
+    <div class="detail-box swap-detail" id="detailSwap">
+      <label><i class="ti ti-arrows-exchange" style="font-size:13px;vertical-align:-1px;margin-right:4px"></i>รายละเอียดการเปลี่ยนคัน</label>
+      <div class="detail-field">
+        <div class="sub-label">ทะเบียนรถคันใหม่ที่เปลี่ยนเป็น <span class="req">*</span></div>
+        <input type="text" id="swapNewPlate" placeholder="เช่น 16-9001" maxlength="12" autocomplete="off">
+      </div>
+      <div class="detail-field">
+        <div class="sub-label">สาเหตุที่เปลี่ยน</div>
+        <select id="swapReason">
+          <option value="">— เลือกสาเหตุ —</option>
+          <option>รถคันเดิมไม่มีในอู่</option>
+          <option>รถคันเดิมตัวถังเสียหาย</option>
+          <option>รถคันเดิมสีหลุด/ผุ ติดไม่ได้</option>
+          <option>รถคันเดิมออกวิ่งไปแล้ว</option>
+          <option>ลูกค้าขอเปลี่ยน</option>
+          <option>อื่นๆ (ระบุในหมายเหตุ)</option>
+        </select>
+      </div>
+      <div class="detail-field">
+        <div class="sub-label">หมายเหตุเพิ่มเติม</div>
+        <textarea id="swapNote" placeholder="ระบุรายละเอียดเพิ่มเติม (ถ้ามี)"></textarea>
+      </div>
+    </div>
+
+    <!-- detail: ยกเลิก -->
+    <div class="detail-box cancel-detail" id="detailCancel">
+      <label><i class="ti ti-x" style="font-size:13px;vertical-align:-1px;margin-right:4px"></i>รายละเอียดการยกเลิก</label>
+      <div class="detail-field">
+        <div class="sub-label">สาเหตุที่ยกเลิก <span class="req">*</span></div>
+        <select id="cancelReason">
+          <option value="">— เลือกสาเหตุ —</option>
+          <option>รถไม่อยู่ในอู่</option>
+          <option>ตัวถังรถเสียหายติดไม่ได้</option>
+          <option>รถผุ/สนิมมาก</option>
+          <option>รถออกวิ่งแล้ว ไม่กลับคืน</option>
+          <option>ลูกค้ายกเลิก Campaign</option>
+          <option>สื่อ/วัสดุไม่พร้อม</option>
+          <option>อื่นๆ (ระบุในหมายเหตุ)</option>
+        </select>
+      </div>
+      <div class="detail-field">
+        <div class="sub-label">หมายเหตุเพิ่มเติม</div>
+        <textarea id="cancelNote" placeholder="ระบุรายละเอียดเพิ่มเติม (ถ้ามี)"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- รูปภาพ -->
+  <div class="card">
+    <label>รูปภาพงาน <span class="req">*</span></label>
+    <div class="photo-zone" id="photoZone">
+      <input type="file" accept="image/*" multiple id="photoInput" onchange="handlePhotos(event)" onclick="this.value=null">
+      <i class="ti ti-camera-plus" aria-hidden="true"></i>
+      <p id="photoLabel">แตะเพื่อเลือกรูป</p>
+      <small>สูงสุด 40 รูป · JPG / PNG · รูปถูกบีบอัดก่อนส่ง</small>
+    </div>
+    <div class="preview-grid" id="previewGrid"></div>
+    <div class="path-box">
+      <i class="ti ti-folder" aria-hidden="true"></i>
+      <span id="pathText">Drive / ปีพ.ศ. / เดือน / วันที่ / MediaType / ทะเบียน</span>
+    </div>
+  </div>
+
+  <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">
+    <i class="ti ti-send" aria-hidden="true"></i>
+    ส่งรายงาน
+  </button>
+
+</div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const LIFF_ID    = '2010157654-04IFsZOC';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxzOHAiAjNGxQZ3lqzXbHWWmPDNLAlAGiongu2nOhDqq181hW252can_I_U0IEqGG9o/exec';
+// ============================================================
+
+const MAX_PHOTOS = 40;
+let selectedStatus  = '';
+let selectedJobType = '';
+let photoFiles      = [];
+
+try {
+  if (typeof liff !== 'undefined') {
+    liff.init({ liffId: LIFF_ID }).catch(err => console.warn('LIFF init:', err));
+  }
+} catch(e) { console.warn('LIFF not available:', e); }
+
+// ── ประเภทงาน ────────────────────────────────────────────────
+function selectJobType(el, type) {
+  document.querySelectorAll('.jobtype-card').forEach(c => { c.className = 'jobtype-card'; });
+  el.className = 'jobtype-card active';
+  selectedJobType = type;
+}
+
+// ── สภาพตัวถัง checkbox ──────────────────────────────────────
+// แยก state สีหลุด (color) and ตัวถังผุ (body)
+const cbColor = {};
+const cbBody  = {};
+
+function toggleCb(id, group, value) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (group === 'color') {
+    cbColor[value] = !cbColor[value];
+    el.classList.toggle('checked', !!cbColor[value]);
+  } else {
+    cbBody[value] = !cbBody[value];
+    el.classList.toggle('checked', !!cbBody[value]);
+  }
+}
+
+function getCondColor() {
+  const vals = Object.entries(cbColor).filter(([k,v]) => v).map(([k]) => k);
+  return vals.length ? vals.join(', ') : '-';
+}
+function getCondBody() {
+  const vals = Object.entries(cbBody).filter(([k,v]) => v).map(([k]) => k);
+  return vals.length ? vals.join(', ') : '-';
+}
+
+function selectStatus(el, status, cls) {
+  document.querySelectorAll('.status-card').forEach(c => { c.className = 'status-card'; });
+  el.className = 'status-card ' + cls;
+  selectedStatus = status;
+  document.getElementById('detailSwap').className   = 'detail-box swap-detail'   + (status === 'swap'   ? ' show' : '');
+  document.getElementById('detailCancel').className = 'detail-box cancel-detail' + (status === 'cancel' ? ' show' : '');
+  if (status === 'swap')   setTimeout(() => document.getElementById('swapNewPlate').focus(), 50);
+  if (status === 'cancel') setTimeout(() => document.getElementById('cancelReason').focus(), 50);
+}
+
+function handlePhotos(e) {
+  const slots = MAX_PHOTOS - photoFiles.length;
+  photoFiles  = [...photoFiles, ...Array.from(e.target.files).slice(0, slots)];
+  renderPreviews();
+  updatePath();
+  e.target.value = '';
+}
+
+function renderPreviews() {
+  const grid = document.getElementById('previewGrid');
+  grid.innerHTML = '';
+  photoFiles.forEach((f, i) => {
+    const item = document.createElement('div');
+    item.className = 'preview-item';
+    item.innerHTML = `<img src="${URL.createObjectURL(f)}" loading="lazy"><button class="rm" onclick="removePhoto(${i})" aria-label="ลบรูป"><i class="ti ti-x"></i></button>`;
+    grid.appendChild(item);
+  });
+  const lbl = document.getElementById('photoLabel');
+  const inp = document.getElementById('photoInput');
+  const n   = photoFiles.length;
+  if (n >= MAX_PHOTOS) {
+    lbl.textContent = `ครบ ${MAX_PHOTOS} รูปแล้ว`;
+    inp.disabled = true;
+  } else {
+    lbl.textContent = n > 0 ? `เพิ่มรูปได้อีก ${MAX_PHOTOS - n} รูป` : 'แตะเพื่อเลือกรูป';
+    inp.disabled = false;
+  }
+}
+
+function removePhoto(idx) {
+  photoFiles.splice(idx, 1);
+  renderPreviews();
+}
+
+function updatePath() {
+  const mt    = document.getElementById('mediatype').value || 'MediaType';
+  const plate = document.getElementById('plate').value     || 'ทะเบียน';
+  const now   = new Date();
+  const y = now.getFullYear() + 543;
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  document.getElementById('pathText').textContent = `Drive / ${y} / ${m} / ${d} / ${mt} / ${plate}`;
+}
+document.getElementById('plate').addEventListener('input', updatePath);
+document.getElementById('product').addEventListener('input', updatePath);
+updatePath();
+
+function compressImage(file, maxW = 800, quality = 0.60) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const scale   = Math.min(1, maxW / img.width);
+      const canvas  = document.createElement('canvas');
+      canvas.width  = img.width   * scale;
+      canvas.height = img.height * scale;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => reject(new Error('โหลดรูปไม่ได้ ลองเลือกรูปใหม่'));
+    img.src = URL.createObjectURL(fIe;
+  });
+}
+
+async function handleSubmit() {
+  const depot     = document.getElementById('depot').value;
+  const plate     = document.getElementById('plate').value.trim();
+  const route     = document.getElementById('route').value.trim();
+  const busnum    = document.getElementById('busnum').value.trim();
+  const product   = document.getElementById('product').value.trim();
+  const mediatype = document.getElementById('mediatype').value;
+
+  if (!selectedJobType) return showToast('กรุณาเลือกประเภทงาน', true);
+  if (!depot)           return showToast('กรุณาเลือกอู่', true);
+  if (!plate)           return showToast('กรุณากรอกทะเบียนรถ', true);
+  if (!product)         return showToast('กรุณากรอกชื่อชินค้า', true);
+  if (!mediatype)       return showToast('กรุณาเลือก Media Type', true);
+  if (!selectedStatus)  return showToast('กรุณาเลือกสถานะงาน', true);
+  if (selectedStatus === 'swap' && !document.getElementById('swapNewPlate').value.trim())
+    return showToast('กรุณากรอกทะเบียนรถคันใหม่', true);
+  if (selectedStatus === 'cancel' && !document.getElementById('cancelReason').value)
+    return showToast('กรุณาเลือกสาเหตุที่ยกเลิก', true);
+  if (!photoFiles.length) return showToast('กรุณาแนบรูปภาพอช่นนอย 1 รูป', true);
+
+  const swapNewPlate = document.getElementById('swapNewPlate').value.trim();
+  const swapReason   = document.getElementById('swapReason').value;
+  const swapNote     = document.getElementById('swapNote').value.trim();
+  const cancelReason = document.getElementById('cancelReason').value;
+  const cancelNote   = document.getElementById('cancelNote').value.trim();
+
+  showLoading(true, 'กนชนบีบอถดรูป...');
+  const photos = await Promise.all(photoFiles.map(f => compressImage(f)));
+
+  const condColor = getCondColor();
+  const condBody  = getCondBody();
+
+  const basePayload = {
+    depot, plate, route, busnum, product, mediatype,
+    jobtype: selectedJobType,
+    condColor, condBody,
+    status: selectedStatus,
+    swapNewPlate, swapReason, swapNote,
+    cancelReason, cancelNote,
+    totalPhotos: photos.length,
+    timestamp: new Date().toISOString()
+  };
+
+  try {
+    for (let i = 0; i < photos.length; i++) {
+      showLoading(true, `วัด ${i+1}/${photos.length} ...`);
+      const payload = {
+        ...basePayload,
+        photos:      [photos[i]],
+        chunkIndex:  i,
+        totalChunks: photos.length,
+        isLastChunk: (i === photos.length - 1)
+      };
+      const res = await fetch(SCRIPT_URL, {
+        method:  'POST',
+        body:    JSON.stringify(payload),
+        redirect:'follow',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+      });
+      const text = await res.text();
+      if (!text || !text.includes('{')) throw new Error('server error');
+      let json;
+      try { json = JSON.parse(text); }
+      catch(e) { throw new Error('response error'); }
+      if (json.status !== 'ok') throw new Error(json.message || 'upload failed');
+    }
+    showLoading(false);
+    showToast('รูปส่งแล้ว Drive แล้ว!);
+    resetForm();
+    setTimeout(() => { try { if (typeof liff !== 'undefined' && liff.isInClient()) liff.closeWindow(); } catch(e) {} }, 2000);
+  } catch (err) {
+    showLoading(false);
+    const msg = err.message || '塽刨年镽整';
+    showToast(msg.length > 40 ? '塽刨年镽整' : msg, true);
+    console.error('[BusReport] error:', err.message);
+  }
+}
+
+function resetForm() {
+  photoFiles = [];
+  renderPreviews();
+  Object.keys(cbColor).forEach(k => { cbColor[k] = false; });
+  Object.keys(cbBody).forEach(k  => { cbBody[k]  = false; });
+  document.querySelectorAll('.cb-item.checked').forEach(el => el.classList.remove('checked'));
+  document.getElementById('depot').value    = '';
+  document.getElementById('plate').value    = '';
+  document.getElemolue('route').value    = '';
+  document.getElementById('busnum').value   = '';
+  document.getElementById('product').value  = '';
+  document.getElementById('mediatype').value = '';
+  const dd = document.getElementById('depotDisplay');
+  dd.textContent = '— เลือกอู่ —'; dd.classList.add('placeholder');
+  const md = document.getElementById('mediatypeDisplay');
+  md.textContent = '— เลือก Media Type —'; md.classList.add('placeholder');
+  document.querySelectorAll('.status-card').forEach(c => { c.className = 'status-card'; });
+  selectedStatus  = '';
+  selectedJobType = '';
+  document.querySelectorAll('.jobtype-card').forEach(c => { c.className = 'lobtype-card'; });
+  updatePath();
+}
+
+function showLoading(show, text = '') {
+  document.getElementById('loadingOverlay').classList.toggle('show', show);
+  if (text) document.getElementById('loadingText').textContent = text;
+}
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent   = msg;
+  t.className     = 'toast' + (isError ? ' error' : '');
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 3000);
+}
+ Media Type —'; md.classList.add('placeholder');
+  // reset status
+  document.querySelectorAll('.status-card').forEach(c => { c.className = 'status-card'; });
+  selectedStatus  = '';
+  selectedJobType = '';
+  document.querySelectorAll('.jobtype-card').forEach(c => { c.className = 'jobtype-card'; });
+  document.getElementById('detailSwap').className   = 'detail-box swap-detail';
+  document.getElementById('detailCancel').className = 'detail-box cancel-detail';
+  updatePath();
+}
+
+function showLoading(show, text = '') {
+  document.getElementById('loadingOverlay').classList.toggle('show', show);
+  if (text) document.getElementById('loadingText').textContent = text;
+}
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent   = msg;
+  t.className     = 'toast' + (isError ? ' error' : '');
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 3000);
+}
+
+// ── Modal Picker: อู่ ─────────────────────────────────────────
+const depotOptions = [
+  '','กัลปพฤกษ์','กัลปพฤกษ์EV','กำแพงเพชร','คลองเตย','เคหะธนฯEV',
+  'เคหะบางพลี (ใหม่)EV','ช้างเอราวัณ','ตลิ่งชันEV','ท่าอิฐ','ท่าอิฐEV',
+  'เทศบาลบางบัวทอง','ธรรมศาสตร์รังสิต','บรมราชชนนี','บ่อดิน','บางเขน',
+  'บึงกุ่มEV','ปากเกร็ดEV','ปากน้ำEV','ปู่เจ้าสมิงพราย','พระประแดง',
+  'พระรามเก้า','พรานนกEV','พุทธบูชาEV','ฟาร์มจระเข้','มีนบุรี',
+  'มีนบุรี หนองจอกEV','มีนบุรีEV','เมกาบางนา','รังสิต','รังสิต 200 ปีEV',
+  'รังสิต คลอง 6EV','รังสิต บางพูนEV','ราม 2EV','รามคำแหง 74EV',
+  'ราษฎร์บูรณะEV','ไร่ขิงEV','เลี่ยงเมืองนนท์EV','เลียบทางด่วนรามอินทรา',
+  'วัดไร่ขิง','ศาลายาEV','สวนสยาม','สายใต้ใหม่EV','สุพรรณยานยนต์EV',
+  'แสมดำ','แสมดำEV','เอกชัยEV'
+];
+const mediatypeOptions = ['','BusWrap','MuvAds','NCA_Bus'];
+
+function buildDepotList(filter) {
+  const list    = document.getElementById('depotList');
+  const current = document.getElementById('depot').value;
+  filter = (filter || '').toLowerCase();
+  list.innerHTML = depotOptions.map(opt => {
+    if (!opt) return '<div class="modal-picker-item placeholder" onclick="selectDepot(\'\')">— เลือกอู่ —</div>';
+    if (filter && !opt.toLowerCase().includes(filter)) return '';
+    const sel = opt === current ? ' selected' : '';
+    return `<div class="modal-picker-item${sel}" onclick="selectDepot('${opt.replace(/'/g,"&#39;")}')">${opt}</div>`;
+  }).join('');
+}
+
+function buildMediatypeList() {
+  const list    = document.getElementById('mediatypeList');
+  const current = document.getElementById('mediatype').value;
+  list.innerHTML = mediatypeOptions.map(opt => {
+    if (!opt) return '<div class="modal-picker-item placeholder" onclick="selectMediatype(\'\')">— เลือก Media Type —</div>';
+    const sel = opt === current ? ' selected' : '';
+    return `<div class="modal-picker-item${sel}" onclick="selectMediatype('${opt}')">${opt}</div>`;
+  }).join('');
+}
+
+function openDepotPicker() {
+  buildDepotList('');
+  document.getElementById('depotSearch').value = '';
+  document.getElementById('depotPickerOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('depotSearch').focus(), 300);
+}
+function closeDepotPicker() {
+  document.getElementById('depotPickerOverlay').classList.remove('open');
+}
+function selectDepot(val) {
+  document.getElementById('depot').value = val;
+  const display = document.getElementById('depotDisplay');
+  if (val) { display.textContent = val; display.classList.remove('placeholder'); }
+  else     { display.textContent = '— เลือกอู่ —'; display.classList.add('placeholder'); }
+  closeDepotPicker();
+}
+function filterDepot(q) { buildDepotList(q); }
+
+function openMediatypePicker() {
+  buildMediatypeList();
+  document.getElementById('mediatypePickerOverlay').classList.add('open');
+}
+function closeMediatypePicker() {
+  document.getElementById('mediatypePickerOverlay').classList.remove('open');
+}
+function selectMediatype(val) {
+  document.getElementById('mediatype').value = val;
+  const display = document.getElementById('mediatypeDisplay');
+  if (val) { display.textContent = val; display.classList.remove('placeholder'); }
+  else     { display.textContent = '— เลือก Media Type —'; display.classList.add('placeholder'); }
+  closeMediatypePicker();
+  updatePath();
+}
+
+(function() {
+  const inp = document.getElementById('photoInput');
+  inp.addEventListener('click', function() { this.value = null; });
+  inp.addEventListener('touchstart', function() { this.value = null; }, { passive: true });
+})();
+
+document.getElementById('depotPickerOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeDepotPicker();
+});
+document.getElementById('mediatypePickerOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeMediatypePicker();
+});
+</script>
+
+</body>
+</html>
