@@ -545,9 +545,9 @@ function selectJobType(el, type) {
 }
 
 // ── สภาพตัวถัง checkbox ──────────────────────────────────────
-// แยก state สีหลุด (color) and ตัวถังผุ (body)
-const cbColor = {};
-const cbBody  = {};
+// แยก state สีหลุด (color) กับ ตัวถังผุ (body)
+const cbColor = {}; // สีหลุด
+const cbBody  = {}; // ตัวถังผุ
 
 function toggleCb(id, group, value) {
   const el = document.getElementById(id);
@@ -570,6 +570,7 @@ function getCondBody() {
   return vals.length ? vals.join(', ') : '-';
 }
 
+// ── status card ──────────────────────────────────────────────
 function selectStatus(el, status, cls) {
   document.querySelectorAll('.status-card').forEach(c => { c.className = 'status-card'; });
   el.className = 'status-card ' + cls;
@@ -580,6 +581,7 @@ function selectStatus(el, status, cls) {
   if (status === 'cancel') setTimeout(() => document.getElementById('cancelReason').focus(), 50);
 }
 
+// ── photo ────────────────────────────────────────────────────
 function handlePhotos(e) {
   const slots = MAX_PHOTOS - photoFiles.length;
   photoFiles  = [...photoFiles, ...Array.from(e.target.files).slice(0, slots)];
@@ -614,6 +616,7 @@ function removePhoto(idx) {
   renderPreviews();
 }
 
+// ── path preview ─────────────────────────────────────────────
 function updatePath() {
   const mt    = document.getElementById('mediatype').value || 'MediaType';
   const plate = document.getElementById('plate').value     || 'ทะเบียน';
@@ -627,22 +630,24 @@ document.getElementById('plate').addEventListener('input', updatePath);
 document.getElementById('product').addEventListener('input', updatePath);
 updatePath();
 
+// ── compress ─────────────────────────────────────────────────
 function compressImage(file, maxW = 800, quality = 0.60) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
       const scale   = Math.min(1, maxW / img.width);
       const canvas  = document.createElement('canvas');
-      canvas.width  = img.width   * scale;
+      canvas.width  = img.width  * scale;
       canvas.height = img.height * scale;
       canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
       resolve(canvas.toDataURL('image/jpeg', quality));
     };
     img.onerror = () => reject(new Error('โหลดรูปไม่ได้ ลองเลือกรูปใหม่'));
-    img.src = URL.createObjectURL(fIe;
+    img.src = URL.createObjectURL(file);
   });
 }
 
+// ── submit ───────────────────────────────────────────────────
 async function handleSubmit() {
   const depot     = document.getElementById('depot').value;
   const plate     = document.getElementById('plate').value.trim();
@@ -654,14 +659,14 @@ async function handleSubmit() {
   if (!selectedJobType) return showToast('กรุณาเลือกประเภทงาน', true);
   if (!depot)           return showToast('กรุณาเลือกอู่', true);
   if (!plate)           return showToast('กรุณากรอกทะเบียนรถ', true);
-  if (!product)         return showToast('กรุณากรอกชื่อชินค้า', true);
+  if (!product)         return showToast('กรุณากรอกชื่อสินค้า', true);
   if (!mediatype)       return showToast('กรุณาเลือก Media Type', true);
   if (!selectedStatus)  return showToast('กรุณาเลือกสถานะงาน', true);
   if (selectedStatus === 'swap' && !document.getElementById('swapNewPlate').value.trim())
     return showToast('กรุณากรอกทะเบียนรถคันใหม่', true);
   if (selectedStatus === 'cancel' && !document.getElementById('cancelReason').value)
     return showToast('กรุณาเลือกสาเหตุที่ยกเลิก', true);
-  if (!photoFiles.length) return showToast('กรุณาแนบรูปภาพอช่นนอย 1 รูป', true);
+  if (!photoFiles.length) return showToast('กรุณาแนบรูปภาพอย่างน้อย 1 รูป', true);
 
   const swapNewPlate = document.getElementById('swapNewPlate').value.trim();
   const swapReason   = document.getElementById('swapReason').value;
@@ -669,9 +674,10 @@ async function handleSubmit() {
   const cancelReason = document.getElementById('cancelReason').value;
   const cancelNote   = document.getElementById('cancelNote').value.trim();
 
-  showLoading(true, 'กนชนบีบอถดรูป...');
+  showLoading(true, 'กำลังบีบอัดรูปภาพ...');
   const photos = await Promise.all(photoFiles.map(f => compressImage(f)));
 
+  // แยก condColor (สีหลุด) และ condBody (ตัวถังผุ) เป็น field แยกกัน
   const condColor = getCondColor();
   const condBody  = getCondBody();
 
@@ -688,7 +694,7 @@ async function handleSubmit() {
 
   try {
     for (let i = 0; i < photos.length; i++) {
-      showLoading(true, `วัด ${i+1}/${photos.length} ...`);
+      showLoading(true, `กำลังอัปโหลด ${i+1}/${photos.length} รูป...`);
       const payload = {
         ...basePayload,
         photos:      [photos[i]],
@@ -703,59 +709,43 @@ async function handleSubmit() {
         headers: { 'Content-Type': 'text/plain;charset=utf-8' }
       });
       const text = await res.text();
-      if (!text || !text.includes('{')) throw new Error('server error');
+      if (!text || !text.includes('{')) throw new Error('server ไม่ตอบกลับ');
       let json;
       try { json = JSON.parse(text); }
       catch(e) { throw new Error('response error'); }
       if (json.status !== 'ok') throw new Error(json.message || 'upload failed');
     }
     showLoading(false);
-    showToast('รูปส่งแล้ว Drive แล้ว!);
+    showToast('ส่งรายงานสำเร็จ! บันทึกลง Drive แล้ว');
     resetForm();
     setTimeout(() => { try { if (typeof liff !== 'undefined' && liff.isInClient()) liff.closeWindow(); } catch(e) {} }, 2000);
   } catch (err) {
     showLoading(false);
-    const msg = err.message || '塽刨年镽整';
-    showToast(msg.length > 40 ? '塽刨年镽整' : msg, true);
-    console.error('[BusReport] error:', err.message);
+    const msg = err.message || 'ไม่สามารถเชื่อมต่อได้';
+    showToast(msg.length > 40 ? 'ส่งไม่ได้ ลองใหม่อีกครั้ง' : msg, true);
+    console.error('[BusReport] submit error:', err.message);
   }
 }
 
 function resetForm() {
   photoFiles = [];
   renderPreviews();
+  // reset checkboxes
   Object.keys(cbColor).forEach(k => { cbColor[k] = false; });
   Object.keys(cbBody).forEach(k  => { cbBody[k]  = false; });
   document.querySelectorAll('.cb-item.checked').forEach(el => el.classList.remove('checked'));
+  // reset inputs
   document.getElementById('depot').value    = '';
   document.getElementById('plate').value    = '';
-  document.getElemolue('route').value    = '';
+  document.getElementById('route').value    = '';
   document.getElementById('busnum').value   = '';
   document.getElementById('product').value  = '';
   document.getElementById('mediatype').value = '';
+  // reset fake selects
   const dd = document.getElementById('depotDisplay');
   dd.textContent = '— เลือกอู่ —'; dd.classList.add('placeholder');
   const md = document.getElementById('mediatypeDisplay');
   md.textContent = '— เลือก Media Type —'; md.classList.add('placeholder');
-  document.querySelectorAll('.status-card').forEach(c => { c.className = 'status-card'; });
-  selectedStatus  = '';
-  selectedJobType = '';
-  document.querySelectorAll('.jobtype-card').forEach(c => { c.className = 'lobtype-card'; });
-  updatePath();
-}
-
-function showLoading(show, text = '') {
-  document.getElementById('loadingOverlay').classList.toggle('show', show);
-  if (text) document.getElementById('loadingText').textContent = text;
-}
-function showToast(msg, isError = false) {
-  const t = document.getElementById('toast');
-  t.textContent   = msg;
-  t.className     = 'toast' + (isError ? ' error' : '');
-  t.style.display = 'block';
-  setTimeout(() => { t.style.display = 'none'; }, 3000);
-}
- Media Type —'; md.classList.add('placeholder');
   // reset status
   document.querySelectorAll('.status-card').forEach(c => { c.className = 'status-card'; });
   selectedStatus  = '';
@@ -849,12 +839,17 @@ function selectMediatype(val) {
   updatePath();
 }
 
+// ── photo input: reset ก่อนเปิด picker ทุกครั้ง ──────────────
+// แก้ปัญหา LINE LIFF WebView ที่ picker ไม่เปิดซ้ำถ้า dismiss ครั้งแรกโดยไม่เลือก
 (function() {
   const inp = document.getElementById('photoInput');
+  // reset via click (เพิ่มอีก layer นอกจาก onclick="this.value=null")
   inp.addEventListener('click', function() { this.value = null; });
+  // reset via touchstart — สำหรับ Android WebView / LINE LIFF บางรุ่น
   inp.addEventListener('touchstart', function() { this.value = null; }, { passive: true });
 })();
 
+// ปิด picker เมื่อแตะ overlay ข้างนอก
 document.getElementById('depotPickerOverlay').addEventListener('click', function(e) {
   if (e.target === this) closeDepotPicker();
 });
