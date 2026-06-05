@@ -629,7 +629,7 @@ select.hidden-select { display: none; }
 // CONFIG
 // ============================================================
 const LIFF_ID    = '2010157654-04IFsZOC';
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw0Qc4ni_mnqc8kzrtty67x2gkXe9TIvpRX_vo1SKIZNhQbFwyiiq2xS3k3a4Wgc8tq-t3aFVA7jsUw8IugK6ng3HeZ0KtgvVBRYZvSCf8gtSBY2KM5Vwsv/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw0Qc4ni_mnqc8kzrtty67x2gkXe9TIvpRX_vo1SKIZNhQbFwyiiq2xS3k3a4Wgc8tq/exec';
 // ============================================================
 
 const MAX_PHOTOS = 40;
@@ -682,7 +682,6 @@ function selectJobType(el, type) {
 }
 
 // ── สภาพตัวถัง ────────────────────────────────────────────────
-// แต่ละ key = 'back'|'left'|'right'|'normal'  value = boolean
 const cbColor   = { back: false, left: false, right: false, normal: false };
 const cbBody    = { back: false, left: false, right: false, normal: false };
 // ── ใบอนุญาตขนส่ง ─────────────────────────────────────────────
@@ -753,7 +752,7 @@ function removePhoto(idx) {
 // ── Path preview ──────────────────────────────────────────────
 function updatePath() {
   const mt    = selectedMediatype || 'MediaType';
-  const plate = document.getElementById('plate').value     || 'ทะเบียน';
+  const plate = document.getElementById('plate').value || 'ทะเบียน';
   const now   = new Date();
   const y = now.getFullYear() + 543;
   const m = String(now.getMonth() + 1).padStart(2, '0');
@@ -812,22 +811,18 @@ async function handleSubmit() {
   showLoading(true, 'กำลังบีบอัดรูปภาพ...');
   const photos = await Promise.all(photoFiles.map(f => compressImage(f)));
 
-  // สภาพตัวถัง: แยกเป็น field ย่อยสำหรับแต่ละด้าน (ง่ายต่อการแมป Sheets column)
   const basePayload = {
     techName,
     depot, plate, route, busnum, product, mediatype,
     jobtype: selectedJobType,
-    // สีหลุด (แยก column)
     condColor_back:   cbColor.back,
     condColor_left:   cbColor.left,
     condColor_right:  cbColor.right,
     condColor_normal: cbColor.normal,
-    // ตัวถังผุ (แยก column)
     condBody_back:    cbBody.back,
     condBody_left:    cbBody.left,
     condBody_right:   cbBody.right,
     condBody_normal:  cbBody.normal,
-    // ใบอนุญาตขนส่ง
     license_mee_kk:   cbLicense.mee_kk,
     license_mee_krut: cbLicense.mee_krut,
     license_mai_kk:   cbLicense.mai_kk,
