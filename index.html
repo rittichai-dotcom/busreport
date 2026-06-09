@@ -280,6 +280,15 @@ select.hidden-select { display: none; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-overlay p { color: #fff; font-size: 14px; font-weight: 600; }
 
+/* ── LINE Warning Banner ── */
+.line-warn {
+  margin-bottom: 12px;
+  background: #fff3cd; border: 1px solid #ffc107; border-radius: var(--radius);
+  padding: 12px 16px; font-size: 13px; color: #856404;
+  display: flex; align-items: center; gap: 10px;
+}
+.line-warn i { font-size: 18px; flex-shrink: 0; }
+
 /* ── Modal Picker ── */
 .modal-picker-overlay {
   display: none; position: fixed; inset: 0; z-index: 9999;
@@ -374,6 +383,12 @@ select.hidden-select { display: none; }
       <h1>รายงานงานติดตั้ง</h1>
       <p>Street-Bus Division · Plan B Media</p>
     </div>
+  </div>
+
+  <!-- LINE Warning Banner (แสดงเมื่อเปิดนอก LINE) -->
+  <div class="line-warn" id="lineWarnBanner" style="display:none">
+    <i class="ti ti-alert-triangle"></i>
+    <span>กรุณาเปิดแอปนี้ผ่าน LINE เท่านั้น — ไม่สามารถส่งรายงานจากเบราว์เซอร์ได้</span>
   </div>
 
   <!-- ประเภทงาน -->
@@ -632,12 +647,14 @@ const LIFF_ID    = '2010157654-04IFsZOC';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw0Qc4ni_mnqc8kzrtty67x2gkXe9TIvpRX_vo1SKIZNhQbFwyiiq2xS3k3a4Wgc8tq/exec';
 // ============================================================
 
-const MAX_PHOTOS = 40;
-let selectedStatus   = '';
-let selectedJobType  = '';
-let selectedDepot    = '';
+const MAX_PHOTOS  = 40;
+const MAX_RETRIES = 3;
+let selectedStatus    = '';
+let selectedJobType   = '';
+let selectedDepot     = '';
 let selectedMediatype = '';
-let photoFiles       = [];
+let photoFiles        = [];
+let isSubmitting      = false;
 
 // ── Depot & Mediatype data ────────────────────────────────────
 const depotOptions = [
@@ -667,10 +684,19 @@ const depotOptions = [
 ];
 const mediatypeOptions = ['BusWrap','MuvAds','NCA_Bus'];
 
-// ── LIFF init ─────────────────────────────────────────────────
+// ── [FIX] LIFF init + enforce LINE client ─────────────────────
 try {
   if (typeof liff !== 'undefined') {
-    liff.init({ liffId: LIFF_ID }).catch(err => console.warn('LIFF init:', err));
+    liff.init({ liffId: LIFF_ID })
+      .then(() => {
+        if (!liff.isInClient()) {
+          document.getElementById('lineWarnBanner').style.display = 'flex';
+          const btn = document.getElementById('submitBtn');
+          btn.disabled = true;
+          btn.innerHTML = '<i class="ti ti-brand-line"></i> กรุณาเปิดผ่าน LINE';
+        }
+      })
+      .catch(err => console.warn('LIFF init:', err));
   }
 } catch(e) { console.warn('LIFF not available:', e); }
 
@@ -753,10 +779,12 @@ function removePhoto(idx) {
 function updatePath() {
   const mt    = selectedMediatype || 'MediaType';
   const plate = document.getElementById('plate').value || 'ทะเบียน';
-  const now   = new Date();
-  const y = now.getFullYear() + 543;
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
+  // [FIX] use Bangkok timezone for path date
+  const bkk = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit'
+  }).format(new Date());
+  const [y_ce, m, d] = bkk.split('-');
+  const y = parseInt(y_ce) + 543;
   document.getElementById('pathText').textContent = `Drive / ${y} / ${m} / ${d} / ${mt} / ${plate}`;
 }
 document.getElementById('plate').addEventListener('input', updatePath);
@@ -779,8 +807,35 @@ function compressImage(file, maxW = 800, quality = 0.60) {
   });
 }
 
+// ── [FIX] Fetch with retry + exponential backoff ──────────────
+async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
+  let lastErr;
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      return await fetch(url, options);
+    } catch (err) {
+      lastErr = err;
+      if (attempt < retries - 1) {
+        await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+      }
+    }
+  }
+  throw lastErr;
+}
+
+// ── [FIX] Bangkok timestamp ───────────────────────────────────
+function getBangkokTimestamp() {
+  return new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Asia/Bangkok',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit'
+  }).format(new Date()).replace(' ', 'T') + '+07:00';
+}
+
 // ── Submit ────────────────────────────────────────────────────
 async function handleSubmit() {
+  if (isSubmitting) return;  // [FIX] block duplicate tap
+
   const techName  = document.getElementById('techName').value.trim();
   const depot     = selectedDepot;
   const plate     = document.getElementById('plate').value.trim();
@@ -808,6 +863,11 @@ async function handleSubmit() {
   const cancelReason = document.getElementById('cancelReason').value;
   const cancelNote   = document.getElementById('cancelNote').value.trim();
 
+  // [FIX] lock button immediately to prevent double submit
+  isSubmitting = true;
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+
   showLoading(true, 'กำลังบีบอัดรูปภาพ...');
   const photos = await Promise.all(photoFiles.map(f => compressImage(f)));
 
@@ -831,7 +891,7 @@ async function handleSubmit() {
     swapNewPlate, swapReason, swapNote,
     cancelReason, cancelNote,
     totalPhotos: photos.length,
-    timestamp: new Date().toISOString()
+    timestamp: getBangkokTimestamp()  // [FIX] Bangkok time
   };
 
   try {
@@ -844,7 +904,8 @@ async function handleSubmit() {
         totalChunks: photos.length,
         isLastChunk: (i === photos.length - 1)
       };
-      const res = await fetch(SCRIPT_URL, {
+      // [FIX] retry up to MAX_RETRIES times on network failure
+      const res  = await fetchWithRetry(SCRIPT_URL, {
         method: 'POST', body: JSON.stringify(payload), redirect: 'follow',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' }
       });
@@ -861,10 +922,14 @@ async function handleSubmit() {
       try { if (typeof liff !== 'undefined' && liff.isInClient()) liff.closeWindow(); } catch(e) {}
     }, 2200);
   } catch (err) {
-    showLoading(false);
     const msg = err.message || 'ไม่สามารถเชื่อมต่อได้';
     showToast(msg.length > 40 ? 'ส่งไม่ได้ ลองใหม่อีกครั้ง' : msg, true);
     console.error('[BusReport] submit error:', err.message);
+  } finally {
+    // [FIX] always re-enable button regardless of outcome
+    showLoading(false);
+    isSubmitting = false;
+    btn.disabled = false;
   }
 }
 
