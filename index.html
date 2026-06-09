@@ -647,8 +647,9 @@ const LIFF_ID    = '2010157654-04IFsZOC';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw0Qc4ni_mnqc8kzrtty67x2gkXe9TIvpRX_vo1SKIZNhQbFwyiiq2xS3k3a4Wgc8tq/exec';
 // ============================================================
 
-const MAX_PHOTOS  = 40;
-const MAX_RETRIES = 3;
+const MAX_PHOTOS        = 40;
+const MAX_RETRIES       = 3;
+const CONCURRENT_UPLOADS = 3;  // อัปโหลดพร้อมกันสูงสุดกี่รูป
 let selectedStatus    = '';
 let selectedJobType   = '';
 let selectedDepot     = '';
@@ -823,6 +824,17 @@ async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
   throw lastErr;
 }
 
+// ── Parallel upload with concurrency limit ────────────────────
+async function uploadWithConcurrency(tasks, limit) {
+  const pool = [];
+  for (const task of tasks) {
+    const p = Promise.resolve().then(task).then(r => { pool.splice(pool.indexOf(p), 1); return r; });
+    pool.push(p);
+    if (pool.length >= limit) await Promise.race(pool);
+  }
+  return Promise.all(pool);
+}
+
 // ── [FIX] Bangkok timestamp ───────────────────────────────────
 function getBangkokTimestamp() {
   return new Intl.DateTimeFormat('sv-SE', {
@@ -895,26 +907,53 @@ async function handleSubmit() {
   };
 
   try {
-    for (let i = 0; i < photos.length; i++) {
-      showLoading(true, `กำลังอัปโหลด ${i+1}/${photos.length} รูป...`);
-      const payload = {
-        ...basePayload,
-        photos:      [photos[i]],
-        chunkIndex:  i,
-        totalChunks: photos.length,
-        isLastChunk: (i === photos.length - 1)
-      };
-      // [FIX] retry up to MAX_RETRIES times on network failure
-      const res  = await fetchWithRetry(SCRIPT_URL, {
-        method: 'POST', body: JSON.stringify(payload), redirect: 'follow',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-      });
-      const text = await res.text();
-      if (!text || !text.includes('{')) throw new Error('server ไม่ตอบกลับ');
-      let json;
-      try { json = JSON.parse(text); } catch(e) { throw new Error('response error'); }
-      if (json.status !== 'ok') throw new Error(json.message || 'upload failed');
-    }
+    // ── [PERF] อัปโหลดรูปแบบ parallel สูงสุด CONCURRENT_UPLOADS รูปพร้อมกัน ──
+    let doneCount = 0;
+    showLoading(true, `กำลังอัปโหลด 0/${photos.length} รูป...`);
+
+    await uploadWithConcurrency(
+      photos.map((photo, i) => async () => {
+        const payload = {
+          ...basePayload,
+          photos:      [photo],
+          chunkIndex:  i,
+          totalChunks: photos.length,
+          isLastChunk: false  // ไม่เขียน Sheets ตอนอัปโหลดรูป
+        };
+        const res  = await fetchWithRetry(SCRIPT_URL, {
+          method: 'POST', body: JSON.stringify(payload), redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+        });
+        const text = await res.text();
+        if (!text || !text.includes('{')) throw new Error('server ไม่ตอบกลับ');
+        let json;
+        try { json = JSON.parse(text); } catch(e) { throw new Error('response error'); }
+        if (json.status !== 'ok') throw new Error(json.message || 'upload failed');
+        doneCount++;
+        showLoading(true, `กำลังอัปโหลด ${doneCount}/${photos.length} รูป...`);
+      }),
+      CONCURRENT_UPLOADS
+    );
+
+    // ── บันทึกข้อมูลลง Sheets (แยก request เพื่อความน่าเชื่อถือ) ──
+    showLoading(true, 'กำลังบันทึกข้อมูล...');
+    const commitPayload = {
+      ...basePayload,
+      photos:      [],
+      chunkIndex:  photos.length - 1,
+      totalChunks: photos.length,
+      isLastChunk: true
+    };
+    const cRes  = await fetchWithRetry(SCRIPT_URL, {
+      method: 'POST', body: JSON.stringify(commitPayload), redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+    });
+    const cText = await cRes.text();
+    if (!cText || !cText.includes('{')) throw new Error('server ไม่ตอบกลับ');
+    let cJson;
+    try { cJson = JSON.parse(cText); } catch(e) { throw new Error('response error'); }
+    if (cJson.status !== 'ok') throw new Error(cJson.message || 'บันทึกไม่สำเร็จ');
+
     showLoading(false);
     showToast('ส่งรายงานสำเร็จ!', false, true);
     resetForm();
