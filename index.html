@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>รายงานงานติดตั้ง — Plan B Media</title>
+<title>Posting & Demolish — Plan B Media</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -406,7 +406,7 @@ select.hidden-select { display: none; }
   <div class="header">
     <div class="logo">PB</div>
     <div class="header-info">
-      <h1>รายงานงานติดตั้ง</h1>
+      <h1>Posting &amp; Demolish</h1>
       <p>Street-Bus Division · Plan B Media</p>
     </div>
   </div>
@@ -511,6 +511,21 @@ select.hidden-select { display: none; }
 
   </div>
 
+  <!-- การลอกภาพโฆษณา -->
+  <div class="section-label">การลอกภาพโฆษณา</div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="status-grid" style="grid-template-columns:1fr 1fr">
+      <div class="status-card" id="peel-yes" onclick="selectPeel('yes')">
+        <i class="ti ti-scissors"></i>
+        <span>มีลอก</span>
+      </div>
+      <div class="status-card" id="peel-no" onclick="selectPeel('no')">
+        <i class="ti ti-ban"></i>
+        <span>ไม่มีลอก</span>
+      </div>
+    </div>
+  </div>
+
   <!-- สภาพตัวถัง -->
   <div class="section-label">สภาพตัวถัง</div>
   <div class="card">
@@ -581,7 +596,7 @@ select.hidden-select { display: none; }
     <div class="status-grid">
       <div class="status-card" onclick="selectStatus(this,'install','s-install')">
         <i class="ti ti-circle-check"></i>
-        <span>ติดตั้งสำเร็จ</span>
+        <span>งานเสร็จ</span>
       </div>
       <div class="status-card" onclick="selectStatus(this,'swap','s-swap')">
         <i class="ti ti-arrows-exchange"></i>
@@ -679,6 +694,7 @@ let selectedStatus    = '';
 let selectedJobType   = '';
 let selectedDepot     = '';
 let selectedMediatype = '';
+let selectedPeel      = '';
 let photoFiles        = [];
 let isSubmitting      = false;
 
@@ -758,6 +774,12 @@ function toggleCb(id, group, key) {
 }
 
 // ── Status ────────────────────────────────────────────────────
+function selectPeel(val) {
+  selectedPeel = val;
+  document.getElementById('peel-yes').className = 'status-card' + (val === 'yes' ? ' s-install' : '');
+  document.getElementById('peel-no').className  = 'status-card' + (val === 'no'  ? ' s-install' : '');
+}
+
 function selectStatus(el, status, cls) {
   document.querySelectorAll('.status-card').forEach(c => c.className = 'status-card');
   el.className = 'status-card ' + cls;
@@ -805,13 +827,14 @@ function removePhoto(idx) {
 function updatePath() {
   const mt    = selectedMediatype || 'MediaType';
   const plate = document.getElementById('plate').value || 'ทะเบียน';
-  // [FIX] use Bangkok timezone for path date
-  const bkk = new Intl.DateTimeFormat('en-CA', {
+  const now = new Date();
+  const bkkDate = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit'
-  }).format(new Date());
-  const [y_ce, m, d] = bkk.split('-');
-  const y = parseInt(y_ce) + 543;
-  document.getElementById('pathText').textContent = `Drive / ${y} / ${m} / ${d} / ${mt} / ${plate}`;
+  }).format(now);
+  const [y_ce, m, d] = bkkDate.split('-');
+  const monthAbbr = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1];
+  const folderDate = `${d}-${m}-${y_ce}`;
+  document.getElementById('pathText').textContent = `Drive / ${y_ce} / ${monthAbbr} / ${folderDate} / ${mt} / ${plate}`;
 }
 document.getElementById('plate').addEventListener('input', updatePath);
 updatePath();
@@ -914,6 +937,7 @@ async function handleSubmit() {
     license_mee_krut: cbLicense.mee_krut,
     license_mai_kk:   cbLicense.mai_kk,
     license_mai_krut: cbLicense.mai_krut,
+    peelAd: selectedPeel,
     status: selectedStatus,
     swapNewPlate, swapReason, swapNote,
     cancelReason, cancelNote,
@@ -975,6 +999,7 @@ function resetForm() {
   md.querySelector('span').textContent = '— เลือก Media Type —'; md.classList.add('placeholder');
   document.querySelectorAll('.status-card').forEach(c => c.className = 'status-card');
   selectedStatus  = '';
+  selectedPeel    = '';
   selectedJobType = '';
   document.querySelectorAll('.jobtype-card').forEach(c => c.className = 'jobtype-card');
   document.getElementById('detailSwap').className   = 'detail-box';
