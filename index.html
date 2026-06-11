@@ -747,6 +747,7 @@ function selectJobType(el, type) {
   document.querySelectorAll('.jobtype-card').forEach(c => c.className = 'jobtype-card');
   el.className = 'jobtype-card active';
   selectedJobType = type;
+  updatePath();
 }
 
 // ── สภาพตัวถัง ────────────────────────────────────────────────
@@ -827,6 +828,8 @@ function removePhoto(idx) {
 function updatePath() {
   const mt    = selectedMediatype || 'MediaType';
   const plate = document.getElementById('plate').value || 'ทะเบียน';
+  const jobtypeLabel = {install:'งานติดตั้ง', peel:'งานลอก', inspect:'งานตรวจรถ', demo:'Demo&Events'};
+  const jt    = (selectedJobType && jobtypeLabel[selectedJobType]) || 'ประเภทงาน';
   const now = new Date();
   const bkkDate = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit'
@@ -834,7 +837,7 @@ function updatePath() {
   const [y_ce, m, d] = bkkDate.split('-');
   const monthAbbr = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1];
   const folderDate = `${d}-${m}-${y_ce}`;
-  document.getElementById('pathText').textContent = `Drive / ${y_ce} / ${monthAbbr} / ${folderDate} / ${mt} / ${plate}`;
+  document.getElementById('pathText').textContent = `Drive / ${y_ce} / ${monthAbbr} / ${jt} / ${folderDate} / ${mt} / ${plate}`;
 }
 document.getElementById('plate').addEventListener('input', updatePath);
 updatePath();
