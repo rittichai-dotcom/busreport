@@ -287,6 +287,36 @@ select.hidden-select { display: none; }
 .toast.error { background: var(--red); }
 .toast.success { background: linear-gradient(135deg, #059669, #047857); }
 
+/* ── Success Overlay ── */
+.success-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 2000; align-items: center; justify-content: center;
+}
+.success-overlay.show { display: flex; }
+.success-card {
+  background: #fff; border-radius: 20px; padding: 32px 28px 28px;
+  width: 88%; max-width: 360px; text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  animation: popIn .25s ease;
+}
+@keyframes popIn {
+  from { transform: scale(.85); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+.success-icon { font-size: 64px; line-height: 1; margin-bottom: 12px; }
+.success-title { font-size: 22px; font-weight: 700; color: #059669; margin-bottom: 20px; }
+.success-info { background: #f0fdf4; border-radius: 12px; padding: 16px; margin-bottom: 20px; text-align: left; }
+.success-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 15px; }
+.success-row:not(:last-child) { border-bottom: 1px solid #d1fae5; }
+.success-label { color: #6b7280; }
+.success-value { font-weight: 600; color: #111827; }
+.success-plate { font-size: 22px; font-weight: 800; color: #059669; letter-spacing: 1px; }
+.success-btn {
+  width: 100%; padding: 14px; background: #059669; color: #fff;
+  border: none; border-radius: 12px; font-size: 16px; font-weight: 700;
+  cursor: pointer; margin-top: 4px;
+}
+
 /* ── Loading ── */
 .loading-overlay {
   display: none; position: fixed; inset: 0; background: rgba(55,53,47,0.6);
@@ -376,6 +406,33 @@ select.hidden-select { display: none; }
   <p id="loadingText">กำลังส่งข้อมูล...</p>
 </div>
 <div class="toast" id="toast"></div>
+
+<!-- Success Overlay -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-card">
+    <div class="success-icon">✅</div>
+    <div class="success-title">ส่งรายงานสำเร็จ!</div>
+    <div class="success-info">
+      <div class="success-row">
+        <span class="success-label">ทะเบียน</span>
+        <span class="success-value success-plate" id="sucPlate">—</span>
+      </div>
+      <div class="success-row">
+        <span class="success-label">สินค้า</span>
+        <span class="success-value" id="sucProduct">—</span>
+      </div>
+      <div class="success-row">
+        <span class="success-label">สถานะ</span>
+        <span class="success-value" id="sucStatus">—</span>
+      </div>
+      <div class="success-row">
+        <span class="success-label">รูปภาพ</span>
+        <span class="success-value" id="sucPhotos">—</span>
+      </div>
+    </div>
+    <button class="success-btn" onclick="closeSuccess()">ปิด / ส่งงานถัดไป</button>
+  </div>
+</div>
 
 <!-- Modal: อู่ -->
 <div class="modal-picker-overlay" id="depotPickerOverlay">
@@ -1012,7 +1069,7 @@ async function handleSubmit() {
       if (json.status !== 'ok') throw new Error(json.message || 'upload failed');
     }
     showLoading(false);
-    showToast('ส่งรายงานสำเร็จ!', false, true);
+    showSuccessOverlay();
     resetForm();
     setTimeout(() => {
       try { if (typeof liff !== 'undefined' && liff.isInClient()) liff.closeWindow(); } catch(e) {}
@@ -1060,6 +1117,26 @@ function showLoading(show, text = '') {
   document.getElementById('loadingOverlay').classList.toggle('show', show);
   if (text) document.getElementById('loadingText').textContent = text;
 }
+function showSuccessOverlay() {
+  const plateVal   = (document.getElementById('plate')?.value || '').trim() || '—';
+  const productVal = (document.getElementById('product')?.value || '').trim() || '—';
+  const statusVal  = selectedStatus === 'install'   ? 'งานเสร็จปกติ' :
+                     selectedStatus === 'installno' ? 'งานเสร็จไม่รับงาน' :
+                     selectedStatus === 'swap'      ? 'เปลี่ยนคัน' :
+                     selectedStatus === 'cancel'    ? 'ยกเลิก' : '—';
+  const photoCount = photoFiles ? photoFiles.length : 0;
+
+  document.getElementById('sucPlate').textContent   = plateVal;
+  document.getElementById('sucProduct').textContent = productVal;
+  document.getElementById('sucStatus').textContent  = statusVal;
+  document.getElementById('sucPhotos').textContent  = photoCount + ' รูป';
+  document.getElementById('successOverlay').classList.add('show');
+}
+
+function closeSuccess() {
+  document.getElementById('successOverlay').classList.remove('show');
+}
+
 function showToast(msg, isError = false, isSuccess = false) {
   const t = document.getElementById('toast');
   t.textContent = msg;
