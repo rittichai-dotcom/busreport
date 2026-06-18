@@ -631,8 +631,17 @@ select.hidden-select { display: none; }
         </select>
       </div>
       <div class="detail-field">
-        <label>หมายเหตุเพิ่มเติม</label>
-        <textarea id="installNoNote" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)"></textarea>
+        <label>ตำแหน่งที่มีปัญหา</label>
+        <select id="installNoNote">
+          <option value="">— เลือกตำแหน่ง —</option>
+          <option>ด้านซ้าย</option>
+          <option>ด้านขวา</option>
+          <option>ด้านหลัง</option>
+          <option>ด้านซ้าย + ด้านขวา</option>
+          <option>ด้านซ้าย + ด้านหลัง</option>
+          <option>ด้านขวา + ด้านหลัง</option>
+          <option>ทุกด้าน</option>
+        </select>
       </div>
     </div>
 
