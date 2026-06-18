@@ -876,7 +876,7 @@ function selectPeel(val) {
 }
 
 function selectStatus(el, status, cls) {
-  document.querySelectorAll('.status-card').forEach(c => c.className = 'status-card');
+  document.querySelectorAll('.status-card:not(#peel-yes):not(#peel-no)').forEach(c => c.className = 'status-card');
   el.className = 'status-card ' + cls;
   selectedStatus = status;
   document.getElementById('detailInstallNo').className = 'detail-box' + (status === 'installno' ? ' show' : '');
@@ -1071,9 +1071,6 @@ async function handleSubmit() {
     showLoading(false);
     showSuccessOverlay();
     resetForm();
-    setTimeout(() => {
-      try { if (typeof liff !== 'undefined' && liff.isInClient()) liff.closeWindow(); } catch(e) {}
-    }, 2200);
   } catch (err) {
     const msg = err.message || 'ไม่สามารถเชื่อมต่อได้';
     showToast(msg.length > 40 ? 'ส่งไม่ได้ ลองใหม่อีกครั้ง' : msg, true);
