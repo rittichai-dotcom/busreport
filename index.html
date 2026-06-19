@@ -404,6 +404,7 @@ select.hidden-select { display: none; }
 <div class="loading-overlay" id="loadingOverlay">
   <div class="spinner-wrap"><div class="spinner"></div></div>
   <p id="loadingText">กำลังส่งข้อมูล...</p>
+  <button id="loadingCancelBtn" onclick="cancelSubmit()" style="display:none;margin-top:8px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:8px 24px;border-radius:100px;font-size:14px;font-family:'Sarabun',sans-serif;cursor:pointer;">ยกเลิก</button>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -941,16 +942,20 @@ updatePath();
 // ── Compress ──────────────────────────────────────────────────
 function compressImage(file, maxW = 800, quality = 0.60) {
   return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('บีบอัดรูปช้าเกินไป ลองใหม่อีกครั้ง')), 15000);
     const img = new Image();
     img.onload = () => {
-      const scale   = Math.min(1, maxW / img.width);
-      const canvas  = document.createElement('canvas');
-      canvas.width  = img.width  * scale;
-      canvas.height = img.height * scale;
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      resolve(canvas.toDataURL('image/jpeg', quality));
+      clearTimeout(timer);
+      try {
+        const scale   = Math.min(1, maxW / img.width);
+        const canvas  = document.createElement('canvas');
+        canvas.width  = img.width  * scale;
+        canvas.height = img.height * scale;
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      } catch(e) { reject(e); }
     };
-    img.onerror = () => reject(new Error('โหลดรูปไม่ได้ ลองเลือกรูปใหม่'));
+    img.onerror = () => { clearTimeout(timer); reject(new Error('โหลดรูปไม่ได้ ลองเลือกรูปใหม่')); };
     img.src = URL.createObjectURL(file);
   });
 }
@@ -1110,9 +1115,26 @@ function resetForm() {
   updatePath();
 }
 
+let _loadingCancelTimer = null;
 function showLoading(show, text = '') {
   document.getElementById('loadingOverlay').classList.toggle('show', show);
   if (text) document.getElementById('loadingText').textContent = text;
+  const cancelBtn = document.getElementById('loadingCancelBtn');
+  if (show) {
+    cancelBtn.style.display = 'none';
+    clearTimeout(_loadingCancelTimer);
+    _loadingCancelTimer = setTimeout(() => { cancelBtn.style.display = 'block'; }, 5000);
+  } else {
+    clearTimeout(_loadingCancelTimer);
+    cancelBtn.style.display = 'none';
+  }
+}
+function cancelSubmit() {
+  showLoading(false);
+  isSubmitting = false;
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = false;
+  showToast('ยกเลิกแล้ว กรุณาลองส่งใหม่อีกครั้ง', true);
 }
 function showSuccessOverlay() {
   const plateVal   = (document.getElementById('plate')?.value || '').trim() || '—';
