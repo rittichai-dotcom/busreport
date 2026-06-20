@@ -738,6 +738,8 @@ select.hidden-select { display: none; }
           <option>ตัวถังรถเสียหายติดไม่ได้</option>
           <option>รถผุ/สนิมมาก</option>
           <option>รถออกวิ่งแล้ว ไม่กลับคืน</option>
+          <option>ไม่มีรถเปลี่ยน</option>
+          <option>ฝนตก</option>
           <option>ลูกค้ายกเลิก Campaign</option>
           <option>สื่อ/วัสดุไม่พร้อม</option>
           <option>รถเสียไม่มีเปลี่ยน</option>
@@ -1011,7 +1013,7 @@ async function handleSubmit() {
     return showToast('กรุณากรอกทะเบียนรถคันใหม่', true);
   if (selectedStatus === 'cancel' && !document.getElementById('cancelReason').value)
     return showToast('กรุณาเลือกสาเหตุที่ยกเลิก', true);
-  if (!photoFiles.length) return showToast('กรุณาแนบรูปภาพอย่างน้อย 1 รูป', true);
+  if (!photoFiles.length && selectedStatus !== 'cancel') return showToast('กรุณาแนบรูปภาพอย่างน้อย 1 รูป', true);
 
   const swapNewPlate = document.getElementById('swapNewPlate').value.trim();
   const swapReason   = document.getElementById('swapReason').value;
