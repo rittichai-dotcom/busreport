@@ -435,6 +435,20 @@ select.hidden-select { display: none; }
   </div>
 </div>
 
+<!-- History Modal -->
+<div class="modal-picker-overlay" id="historyOverlay">
+  <div class="modal-picker-sheet" style="max-height:85vh">
+    <div class="modal-picker-handle"></div>
+    <div class="modal-picker-header">
+      <h3>ประวัติงานของฉัน</h3>
+      <button class="modal-picker-close" onclick="closeHistory()">✕</button>
+    </div>
+    <div id="historyBody" style="overflow-y:auto;flex:1;padding:12px 14px 20px">
+      <p style="text-align:center;color:#9b9a97;font-size:14px;padding:20px">กำลังโหลด...</p>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: อู่ -->
 <div class="modal-picker-overlay" id="depotPickerOverlay">
   <div class="modal-picker-sheet">
@@ -469,6 +483,7 @@ select.hidden-select { display: none; }
       <h1>Posting &amp; Demolish</h1>
       <p>Street-Bus Division · Plan B Media</p>
     </div>
+    <button onclick="openHistory()" style="margin-left:auto;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;font-family:'Sarabun',sans-serif;cursor:pointer;flex-shrink:0;display:flex;align-items:center;gap:5px;"><i class="ti ti-history" style="font-size:15px"></i>ประวัติงาน</button>
   </div>
 
   <!-- LINE Warning Banner (แสดงเมื่อเปิดนอก LINE) -->
@@ -1247,6 +1262,64 @@ document.getElementById('depotPickerOverlay').addEventListener('click', function
 document.getElementById('mediatypePickerOverlay').addEventListener('click', function(e) {
   if (e.target === this) closeMediatypePicker();
 });
+document.getElementById('historyOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeHistory();
+});
+
+// ── ประวัติงาน ────────────────────────────────────────────────
+function openHistory() {
+  const name = document.getElementById('techName').value.trim();
+  const body = document.getElementById('historyBody');
+  document.getElementById('historyOverlay').classList.add('open');
+  if (!name) {
+    body.innerHTML = '<p style="text-align:center;color:#e03e3e;font-size:14px;padding:20px">กรุณากรอกชื่อก่อนดูประวัติงาน</p>';
+    return;
+  }
+  body.innerHTML = '<p style="text-align:center;color:#9b9a97;font-size:14px;padding:20px">กำลังโหลด...</p>';
+  fetch(SCRIPT_URL + '?action=history&name=' + encodeURIComponent(name), { redirect: 'follow' })
+    .then(r => r.json())
+    .then(d => renderHistory(d, name))
+    .catch(() => { body.innerHTML = '<p style="text-align:center;color:#e03e3e;font-size:14px;padding:20px">โหลดไม่ได้ ลองใหม่อีกครั้ง</p>'; });
+}
+function closeHistory() {
+  document.getElementById('historyOverlay').classList.remove('open');
+}
+function renderHistory(d, name) {
+  const body = document.getElementById('historyBody');
+  if (!d || d.status !== 'ok') { body.innerHTML = '<p style="text-align:center;color:#e03e3e;font-size:14px;padding:20px">เกิดข้อผิดพลาด</p>'; return; }
+  const jobs = d.jobs || [];
+  const stColor = s => s==='งานเสร็จปกติ'?'#059669':s==='งานเสร็จไม่รับงาน'?'#d97706':s==='เปลี่ยนคัน'?'#0284c7':'#dc2626';
+  const stIcon  = s => s==='งานเสร็จปกติ'?'✅':s==='งานเสร็จไม่รับงาน'?'⚠️':s==='เปลี่ยนคัน'?'🔄':'❌';
+  if (jobs.length === 0) {
+    body.innerHTML = `<p style="text-align:center;padding:24px 0;font-size:14px;color:#9b9a97">ไม่พบงานของ <b>${name}</b><br>ในวันนี้และเมื่อวาน</p>`;
+    return;
+  }
+  const todayJobs = jobs.filter(j => j.date === d.today);
+  const pastJobs  = jobs.filter(j => j.date !== d.today);
+  let html = `<p style="font-size:13px;color:#6b7280;margin-bottom:12px">พบ <b>${jobs.length}</b> งาน (วันนี้ ${todayJobs.length} งาน)</p>`;
+  const renderGroup = (list, label) => {
+    if (!list.length) return '';
+    let g = `<p style="font-size:11px;font-weight:700;color:#9b9a97;text-transform:uppercase;letter-spacing:.06em;margin:14px 0 6px">${label}</p>`;
+    list.forEach(j => {
+      const color = stColor(j.status);
+      g += `<div style="background:#f8fafc;border:1px solid #e4e6ea;border-radius:10px;padding:12px 14px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:18px;font-weight:800;color:#059669;letter-spacing:.5px">${j.plate}</span>
+          <span style="font-size:12px;color:${color};font-weight:700">${stIcon(j.status)} ${j.status}</span>
+        </div>
+        <div style="font-size:13px;color:#374151">${j.product} · ${j.media}</div>
+        <div style="font-size:12px;color:#9b9a97;margin-top:4px;display:flex;justify-content:space-between">
+          <span>${j.depot}</span>
+          <span>${j.time} · ${j.photos} รูป ${j.folder?'<a href="'+j.folder+'" target="_blank" style="color:#1d4ed8">📁</a>':''}</span>
+        </div>
+      </div>`;
+    });
+    return g;
+  };
+  html += renderGroup(todayJobs, 'วันนี้');
+  html += renderGroup(pastJobs,  'เมื่อวาน');
+  body.innerHTML = html;
+}
 </script>
 </body>
 </html>

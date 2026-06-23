@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard — Bus Media Report</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0f2f5; --surface: #fff; --border: #e4e6ea;
+  --text: #1a1a2e; --muted: #6b7280;
+  --green: #059669; --blue: #1d4ed8; --orange: #d97706; --red: #dc2626;
+  --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Sarabun', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  padding: 18px 20px; display: flex; align-items: center; gap: 14px;
+}
+.logo { width: 42px; height: 42px; border-radius: 10px; background: linear-gradient(135deg,#3b82f6,#1d4ed8); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; flex-shrink:0; }
+.header h1 { font-size: 17px; font-weight: 700; color: #fff; }
+.header p  { font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 1px; }
+.header-right { margin-left: auto; text-align: right; }
+.updated-at { font-size: 11px; color: rgba(255,255,255,0.45); }
+.refresh-btn { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-family: 'Sarabun',sans-serif; cursor: pointer; display: flex; align-items: center; gap: 5px; margin-top: 6px; }
+.refresh-btn:active { opacity: 0.75; }
+
+.page { max-width: 640px; margin: 0 auto; padding: 16px 14px 48px; }
+
+/* Stat cards */
+.stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+.stat-card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+.stat-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; display: flex; align-items: center; gap: 5px; }
+.stat-label i { font-size: 14px; }
+.stat-num { font-size: 36px; font-weight: 800; line-height: 1; }
+.stat-sub { font-size: 12px; color: var(--muted); }
+.c-green  { color: var(--green); }
+.c-blue   { color: var(--blue); }
+.c-orange { color: var(--orange); }
+.c-gray   { color: #374151; }
+
+/* Section */
+.section-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); margin: 20px 0 8px 4px; display: flex; align-items: center; gap: 6px;
+}
+.section-label::before { content:''; width:3px; height:12px; background:var(--blue); border-radius:2px; }
+
+/* Status cards */
+.status-row { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 20px; }
+.status-card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 14px 16px; }
+.status-card .label { font-size: 12px; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+.status-card .num   { font-size: 28px; font-weight: 800; line-height: 1; }
+.status-card .pct   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* Bar chart */
+.bar-block { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 14px 16px; margin-bottom: 10px; }
+.bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.bar-row:last-child { margin-bottom: 0; }
+.bar-name { font-size: 13px; font-weight: 600; width: 110px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-track { flex: 1; background: #f1f5f9; border-radius: 100px; height: 10px; overflow: hidden; }
+.bar-fill  { height: 100%; border-radius: 100px; background: var(--blue); transition: width .5s ease; }
+.bar-count { font-size: 13px; font-weight: 700; color: var(--text); width: 32px; text-align: right; flex-shrink: 0; }
+
+/* Recent jobs */
+.job-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px; }
+.job-top  { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+.job-plate { font-size: 18px; font-weight: 800; color: var(--green); letter-spacing: .5px; }
+.job-status { font-size: 12px; font-weight: 700; }
+.job-mid  { font-size: 13px; color: #374151; margin-bottom: 3px; }
+.job-bot  { font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; }
+
+/* Spinner */
+.spinner-wrap { display: flex; justify-content: center; align-items: center; padding: 40px; }
+.spinner { width: 28px; height: 28px; border: 3px solid #e0e0e0; border-top-color: var(--blue); border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.error-msg { text-align: center; padding: 32px; color: var(--red); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">PB</div>
+  <div>
+    <h1>Dashboard</h1>
+    <p>Bus Media Report · Plan B Media</p>
+  </div>
+  <div class="header-right">
+    <div class="updated-at" id="updatedAt">—</div>
+    <button class="refresh-btn" onclick="loadDashboard()"><i class="ti ti-refresh"></i> รีเฟรช</button>
+  </div>
+</div>
+
+<div class="page" id="dashPage">
+  <div class="spinner-wrap"><div class="spinner"></div></div>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRW0nYV9F2Hujy8gFbpcsx6z3C_VK_7WBgphlGMWfz3UZGNR9qfcHJm3Mi3K_XYBJm/exec';
+
+function stColor(s) {
+  return s==='งานเสร็จปกติ'?'#059669':s==='งานเสร็จไม่รับงาน'?'#d97706':s==='เปลี่ยนคัน'?'#1d4ed8':'#dc2626';
+}
+function stIcon(s) {
+  return s==='งานเสร็จปกติ'?'✅':s==='งานเสร็จไม่รับงาน'?'⚠️':s==='เปลี่ยนคัน'?'🔄':'❌';
+}
+
+function loadDashboard() {
+  const page = document.getElementById('dashPage');
+  page.innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
+  fetch(SCRIPT_URL + '?action=dashboard', { redirect: 'follow' })
+    .then(r => r.json())
+    .then(d => { if (d.status === 'ok') render(d); else page.innerHTML = '<p class="error-msg">เกิดข้อผิดพลาด: ' + (d.message||'') + '</p>'; })
+    .catch(() => { page.innerHTML = '<p class="error-msg">โหลดไม่ได้ ตรวจสอบการเชื่อมต่อแล้วลองใหม่</p>'; });
+}
+
+function render(d) {
+  document.getElementById('updatedAt').textContent = 'อัปเดต ' + (d.updatedAt || '');
+
+  const total  = d.total  || 0;
+  const today  = d.today  || 0;
+  const month  = d.month  || 0;
+  const bs     = d.byStatus || {};
+  const finish = (bs['งานเสร็จปกติ']||0) + (bs['งานเสร็จไม่รับงาน']||0);
+  const swap   = bs['เปลี่ยนคัน'] || 0;
+  const cancel = bs['ยกเลิก']     || 0;
+  const pct    = n => total > 0 ? Math.round(n/total*100) + '%' : '0%';
+
+  // depots bar
+  const depots    = d.byDepot    || [];
+  const maxDepot  = depots.length > 0 ? depots[0].count : 1;
+  const depotBars = depots.map(dep => `
+    <div class="bar-row">
+      <div class="bar-name" title="${dep.name}">${dep.name}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(dep.count/maxDepot*100)}%"></div></div>
+      <div class="bar-count">${dep.count}</div>
+    </div>`).join('');
+
+  // media type bars
+  const medias   = d.byMedia || [];
+  const maxMedia = medias.length > 0 ? Math.max(...medias.map(m=>m.count)) : 1;
+  const MEDIA_COLORS = {'BusWrap':'#1d4ed8','MuvAds':'#7c3aed','NCA_Bus':'#059669'};
+  const mediaBars = medias.map(m => `
+    <div class="bar-row">
+      <div class="bar-name">${m.name}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(m.count/maxMedia*100)}%;background:${MEDIA_COLORS[m.name]||'#374151'}"></div></div>
+      <div class="bar-count">${m.count}</div>
+    </div>`).join('');
+
+  // recent jobs
+  const recent = (d.recent || []).map(j => `
+    <div class="job-card">
+      <div class="job-top">
+        <span class="job-plate">${j.plate}</span>
+        <span class="job-status" style="color:${stColor(j.status)}">${stIcon(j.status)} ${j.status}</span>
+      </div>
+      <div class="job-mid">${j.product} · ${j.media}</div>
+      <div class="job-bot">
+        <span>${j.tech} · ${j.depot}</span>
+        <span>${j.date} ${j.time} ${j.folder?'<a href="'+j.folder+'" target="_blank" style="color:#1d4ed8">📁</a>':''}</span>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('dashPage').innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label"><i class="ti ti-calendar-event c-blue"></i>วันนี้</div>
+        <div class="stat-num c-blue">${today}</div>
+        <div class="stat-sub">งานที่ส่งวันนี้</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label"><i class="ti ti-calendar-month c-orange"></i>เดือนนี้</div>
+        <div class="stat-num c-orange">${month}</div>
+        <div class="stat-sub">งานทั้งเดือน</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label"><i class="ti ti-circle-check c-green"></i>งานเสร็จ</div>
+        <div class="stat-num c-green">${finish}</div>
+        <div class="stat-sub">${pct(finish)} ของทั้งหมด</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label"><i class="ti ti-database c-gray"></i>ทั้งหมด</div>
+        <div class="stat-num c-gray">${total}</div>
+        <div class="stat-sub">งานสะสม</div>
+      </div>
+    </div>
+
+    <div class="section-label">สถานะงาน</div>
+    <div class="status-row">
+      <div class="status-card">
+        <div class="label">✅ งานเสร็จปกติ</div>
+        <div class="num" style="color:#059669">${bs['งานเสร็จปกติ']||0}</div>
+        <div class="pct">${pct(bs['งานเสร็จปกติ']||0)}</div>
+      </div>
+      <div class="status-card">
+        <div class="label">⚠️ ไม่รับงาน</div>
+        <div class="num" style="color:#d97706">${bs['งานเสร็จไม่รับงาน']||0}</div>
+        <div class="pct">${pct(bs['งานเสร็จไม่รับงาน']||0)}</div>
+      </div>
+      <div class="status-card">
+        <div class="label">🔄 เปลี่ยนคัน</div>
+        <div class="num" style="color:#1d4ed8">${swap}</div>
+        <div class="pct">${pct(swap)}</div>
+      </div>
+      <div class="status-card">
+        <div class="label">❌ ยกเลิก</div>
+        <div class="num" style="color:#dc2626">${cancel}</div>
+        <div class="pct">${pct(cancel)}</div>
+      </div>
+    </div>
+
+    <div class="section-label">อู่ที่ active (Top 10)</div>
+    <div class="bar-block">${depotBars || '<p style="color:#9b9a97;font-size:13px">ไม่มีข้อมูล</p>'}</div>
+
+    <div class="section-label">Media Type</div>
+    <div class="bar-block">${mediaBars || '<p style="color:#9b9a97;font-size:13px">ไม่มีข้อมูล</p>'}</div>
+
+    <div class="section-label">งานล่าสุด 15 รายการ</div>
+    ${recent || '<p style="color:#9b9a97;font-size:13px;padding:12px">ไม่มีข้อมูล</p>'}
+  `;
+}
+
+loadDashboard();
+</script>
+</body>
+</html>
