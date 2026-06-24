@@ -131,6 +131,11 @@ body {
 .card-row .fake-select-inline i { font-size: 14px; color: var(--muted); flex-shrink: 0; }
 select.hidden-select { display: none; }
 
+/* ── Chip group (Type of wrap / Model name) ── */
+.chip-group { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 0; }
+.chip { padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border); font-size: 13px; cursor: pointer; transition: all .15s; background: var(--card); color: var(--text); }
+.chip.selected { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+
 /* ── Job Type ── */
 .jobtype-grid {
   display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
@@ -584,6 +589,39 @@ select.hidden-select { display: none; }
       </div>
     </div>
 
+    <!-- Type of wrap -->
+    <div class="card-row" style="align-items:flex-start">
+      <div class="card-row-icon"><i class="ti ti-layout-distribute-horizontal"></i></div>
+      <div class="card-row-body">
+        <div class="card-row-label">Type of wrap</div>
+        <div class="chip-group" id="wrapTypeGroup">
+          <div class="chip" onclick="toggleChip(this,'wrapType')">HW</div>
+          <div class="chip" onclick="toggleChip(this,'wrapType')">FW</div>
+          <div class="chip" onclick="toggleChip(this,'wrapType')">QW</div>
+          <div class="chip" onclick="toggleChip(this,'wrapType')">HW+IB</div>
+          <div class="chip" onclick="toggleChip(this,'wrapType')">FW+IB</div>
+          <div class="chip" onclick="toggleChip(this,'wrapType')">IB</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Model name -->
+    <div class="card-row" style="align-items:flex-start">
+      <div class="card-row-icon"><i class="ti ti-bus"></i></div>
+      <div class="card-row-body">
+        <div class="card-row-label">Model name</div>
+        <div class="chip-group" id="modelNameGroup">
+          <div class="chip" onclick="toggleChip(this,'modelName')">TSB02</div>
+          <div class="chip" onclick="toggleChip(this,'modelName')">BLK</div>
+          <div class="chip" onclick="toggleChip(this,'modelName')">Isuzu55</div>
+          <div class="chip" onclick="toggleChip(this,'modelName')">Isuzu56</div>
+          <div class="chip" onclick="toggleChip(this,'modelName')">Hino44</div>
+          <div class="chip" onclick="toggleChip(this,'modelName')">Hino45</div>
+          <div class="chip" onclick="toggleChip(this,'modelName')">Daewoo67</div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- การลอกภาพโฆษณา -->
@@ -837,6 +875,16 @@ const depotOptions = [
   'เอกชัยEV'
 ];
 const mediatypeOptions = ['BusWrap','MuvAds','NCA_Bus'];
+let selectedWrapType  = '';
+let selectedModelName = '';
+
+function toggleChip(el, group) {
+  const container = el.closest('.chip-group');
+  container.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  if (group === 'wrapType')  selectedWrapType  = el.textContent;
+  if (group === 'modelName') selectedModelName = el.textContent;
+}
 
 // ── [FIX] LIFF init + enforce LINE client ─────────────────────
 try {
@@ -1047,6 +1095,8 @@ async function handleSubmit() {
   const basePayload = {
     techName,
     depot, plate, route, busnum, product, mediatype,
+    wrapType: selectedWrapType,
+    modelName: selectedModelName,
     jobtype: selectedJobType,
     condColor_back:   cbColor.back,
     condColor_left:   cbColor.left,
@@ -1129,6 +1179,9 @@ function resetForm() {
   ['techName','plate','route','busnum','product'].forEach(id => document.getElementById(id).value = '');
   selectedDepot     = '';
   selectedMediatype = '';
+  selectedWrapType  = '';
+  selectedModelName = '';
+  document.querySelectorAll('.chip.selected').forEach(c => c.classList.remove('selected'));
   const dd = document.getElementById('depotDisplay');
   dd.querySelector('span').textContent = '— เลือกอู่ —'; dd.classList.add('placeholder');
   const md = document.getElementById('mediatypeDisplay');
