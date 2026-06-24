@@ -1041,8 +1041,11 @@ async function handleSubmit() {
   if (!depot)             return showToast('กรุณาเลือกอู่', true);
   if (!plate)             return showToast('กรุณากรอกทะเบียนรถ', true);
   if (!product)           return showToast('กรุณากรอกชื่อสินค้า', true);
-  if (!mediatype)         return showToast('กรุณาเลือก Media Type', true);
-  if (!selectedStatus)    return showToast('กรุณาเลือกสถานะงาน', true);
+  if (!mediatype)           return showToast('กรุณาเลือก Media Type', true);
+  if (!selectedWrapType)    return showToast('กรุณาเลือก Type of wrap', true);
+  if (!selectedModelName)   return showToast('กรุณาเลือก Model name', true);
+  if (!selectedPeel)        return showToast('กรุณาเลือกการลอกภาพโฆษณา', true);
+  if (!selectedStatus)      return showToast('กรุณาเลือกสถานะงาน', true);
   if (selectedStatus === 'installno' && !document.getElementById('installNoReason').value)
     return showToast('กรุณาเลือกสาเหตุงานเสร็จไม่รับงาน', true);
   if (selectedStatus === 'swap' && !document.getElementById('swapNewPlate').value.trim())
