@@ -578,13 +578,14 @@ select.hidden-select { display: none; }
     </div>
 
     <!-- Media Type -->
-    <div class="card-row" onclick="openMediatypePicker()" style="cursor:pointer">
+    <div class="card-row" style="align-items:flex-start">
       <div class="card-row-icon"><i class="ti ti-layers"></i></div>
       <div class="card-row-body">
         <div class="card-row-label">Media Type <span class="req">*</span></div>
-        <div class="fake-select-inline placeholder" id="mediatypeDisplay">
-          <span>— เลือก Media Type —</span>
-          <i class="ti ti-chevron-right"></i>
+        <div class="chip-group" id="mediatypeChipGroup">
+          <div class="chip" onclick="selectMediatypeChip(this,'BusWrap')">BusWrap</div>
+          <div class="chip" onclick="selectMediatypeChip(this,'MuvAds')">MuvAds</div>
+          <div class="chip" onclick="selectMediatypeChip(this,'NCA_Bus')">NCA_Bus</div>
         </div>
       </div>
     </div>
@@ -626,16 +627,10 @@ select.hidden-select { display: none; }
 
   <!-- การลอกภาพโฆษณา -->
   <div class="section-label">การลอกภาพโฆษณา</div>
-  <div class="card" style="padding:0;overflow:hidden">
-    <div class="status-grid" style="grid-template-columns:1fr 1fr">
-      <div class="status-card" id="peel-yes" onclick="selectPeel('yes')">
-        <i class="ti ti-scissors"></i>
-        <span>มีลอก</span>
-      </div>
-      <div class="status-card" id="peel-no" onclick="selectPeel('no')">
-        <i class="ti ti-ban"></i>
-        <span>ไม่มีลอก</span>
-      </div>
+  <div class="card">
+    <div class="chip-group" id="peelChipGroup">
+      <div class="chip" onclick="selectPeelChip(this,'yes')"><i class="ti ti-scissors"></i> มีลอก</div>
+      <div class="chip" onclick="selectPeelChip(this,'no')"><i class="ti ti-ban"></i> ไม่มีลอก</div>
     </div>
   </div>
 
@@ -646,38 +641,22 @@ select.hidden-select { display: none; }
       <div class="condition-title">
         <i class="ti ti-paint" style="color:var(--orange)"></i> สีหลุด
       </div>
-      <div class="cb-grid">
-        <div class="cb-item" id="cb-si-B" onclick="toggleCb('cb-si-B','color','back')">
-          <div class="cb-box"></div><span>ด้านหลัง</span>
-        </div>
-        <div class="cb-item" id="cb-si-L" onclick="toggleCb('cb-si-L','color','left')">
-          <div class="cb-box"></div><span>ด้านซ้าย</span>
-        </div>
-        <div class="cb-item" id="cb-si-R" onclick="toggleCb('cb-si-R','color','right')">
-          <div class="cb-box"></div><span>ด้านขวา</span>
-        </div>
-        <div class="cb-item" id="cb-si-N" onclick="toggleCb('cb-si-N','color','normal')">
-          <div class="cb-box"></div><span>ปกติ</span>
-        </div>
+      <div class="chip-group" id="colorChipGroup">
+        <div class="chip" onclick="toggleCbChip(this,'color','back')">ด้านหลัง</div>
+        <div class="chip" onclick="toggleCbChip(this,'color','left')">ด้านซ้าย</div>
+        <div class="chip" onclick="toggleCbChip(this,'color','right')">ด้านขวา</div>
+        <div class="chip" onclick="toggleCbChip(this,'color','normal')">ปกติ</div>
       </div>
     </div>
-    <div class="condition-block">
+    <div class="condition-block" style="border-bottom:none">
       <div class="condition-title">
         <i class="ti ti-alert-triangle" style="color:var(--red)"></i> ตัวถังผุ
       </div>
-      <div class="cb-grid">
-        <div class="cb-item" id="cb-tu-B" onclick="toggleCb('cb-tu-B','body','back')">
-          <div class="cb-box"></div><span>ด้านหลัง</span>
-        </div>
-        <div class="cb-item" id="cb-tu-L" onclick="toggleCb('cb-tu-L','body','left')">
-          <div class="cb-box"></div><span>ด้านซ้าย</span>
-        </div>
-        <div class="cb-item" id="cb-tu-R" onclick="toggleCb('cb-tu-R','body','right')">
-          <div class="cb-box"></div><span>ด้านขวา</span>
-        </div>
-        <div class="cb-item" id="cb-tu-N" onclick="toggleCb('cb-tu-N','body','normal')">
-          <div class="cb-box"></div><span>ปกติ</span>
-        </div>
+      <div class="chip-group" id="bodyChipGroup">
+        <div class="chip" onclick="toggleCbChip(this,'body','back')">ด้านหลัง</div>
+        <div class="chip" onclick="toggleCbChip(this,'body','left')">ด้านซ้าย</div>
+        <div class="chip" onclick="toggleCbChip(this,'body','right')">ด้านขวา</div>
+        <div class="chip" onclick="toggleCbChip(this,'body','normal')">ปกติ</div>
       </div>
     </div>
   </div>
@@ -685,21 +664,11 @@ select.hidden-select { display: none; }
   <!-- ใบอนุญาตขนส่ง -->
   <div class="section-label">ใบอนุญาตขนส่ง</div>
   <div class="card">
-    <div class="condition-block" style="border-bottom:none">
-      <div class="cb-grid" style="grid-template-columns:repeat(4,1fr)">
-        <div class="cb-item" id="cb-lc-MK" onclick="toggleLicense('mee_kk')">
-          <div class="cb-box"></div><span>มี_คค</span>
-        </div>
-        <div class="cb-item" id="cb-lc-MR" onclick="toggleLicense('mee_krut')">
-          <div class="cb-box"></div><span>มี_ตราครุฑ</span>
-        </div>
-        <div class="cb-item" id="cb-lc-NK" onclick="toggleLicense('mai_kk')">
-          <div class="cb-box"></div><span>ไม่มี_คค</span>
-        </div>
-        <div class="cb-item" id="cb-lc-NR" onclick="toggleLicense('mai_krut')">
-          <div class="cb-box"></div><span>ไม่มี_ตราครุฑ</span>
-        </div>
-      </div>
+    <div class="chip-group" id="licenseChipGroup">
+      <div class="chip" onclick="toggleLicenseChip(this,'mee_kk')">มี_คค</div>
+      <div class="chip" onclick="toggleLicenseChip(this,'mee_krut')">มี_ตราครุฑ</div>
+      <div class="chip" onclick="toggleLicenseChip(this,'mai_kk')">ไม่มี_คค</div>
+      <div class="chip" onclick="toggleLicenseChip(this,'mai_krut')">ไม่มี_ตราครุฑ</div>
     </div>
   </div>
 
@@ -917,28 +886,32 @@ const cbBody    = { back: false, left: false, right: false, normal: false };
 const cbLicense = { mee_kk: false, mee_krut: false, mai_kk: false, mai_krut: false };
 const LICENSE_ID_MAP = { mee_kk: 'cb-lc-MK', mee_krut: 'cb-lc-MR', mai_kk: 'cb-lc-NK', mai_krut: 'cb-lc-NR' };
 
-function toggleLicense(key) {
-  cbLicense[key] = !cbLicense[key];
-  document.getElementById(LICENSE_ID_MAP[key]).classList.toggle('checked', cbLicense[key]);
+function toggleCbChip(el, group, key) {
+  const isOn = el.classList.toggle('selected');
+  if (group === 'color') cbColor[key] = isOn;
+  else                   cbBody[key]  = isOn;
 }
 
-function toggleCb(id, group, key) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  if (group === 'color') {
-    cbColor[key] = !cbColor[key];
-    el.classList.toggle('checked', cbColor[key]);
-  } else {
-    cbBody[key] = !cbBody[key];
-    el.classList.toggle('checked', cbBody[key]);
-  }
+function toggleLicenseChip(el, key) {
+  const isOn = el.classList.toggle('selected');
+  cbLicense[key] = isOn;
+}
+
+function selectMediatypeChip(el, val) {
+  document.querySelectorAll('#mediatypeChipGroup .chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedMediatype = val;
+}
+
+function selectPeelChip(el, val) {
+  document.querySelectorAll('#peelChipGroup .chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPeel = val;
 }
 
 // ── Status ────────────────────────────────────────────────────
 function selectPeel(val) {
   selectedPeel = val;
-  document.getElementById('peel-yes').className = 'status-card' + (val === 'yes' ? ' s-install' : '');
-  document.getElementById('peel-no').className  = 'status-card' + (val === 'no'  ? ' s-install' : '');
 }
 
 function selectStatus(el, status, cls) {
@@ -1175,20 +1148,17 @@ function resetForm() {
   Object.keys(cbColor).forEach(k   => { cbColor[k]   = false; });
   Object.keys(cbBody).forEach(k    => { cbBody[k]    = false; });
   Object.keys(cbLicense).forEach(k => { cbLicense[k] = false; });
-  document.querySelectorAll('.cb-item.checked').forEach(el => el.classList.remove('checked'));
   ['techName','plate','route','busnum','product'].forEach(id => document.getElementById(id).value = '');
   selectedDepot     = '';
   selectedMediatype = '';
   selectedWrapType  = '';
   selectedModelName = '';
+  selectedPeel      = '';
   document.querySelectorAll('.chip.selected').forEach(c => c.classList.remove('selected'));
   const dd = document.getElementById('depotDisplay');
   dd.querySelector('span').textContent = '— เลือกอู่ —'; dd.classList.add('placeholder');
-  const md = document.getElementById('mediatypeDisplay');
-  md.querySelector('span').textContent = '— เลือก Media Type —'; md.classList.add('placeholder');
   document.querySelectorAll('.status-card').forEach(c => c.className = 'status-card');
   selectedStatus  = '';
-  selectedPeel    = '';
   selectedJobType = '';
   document.querySelectorAll('.jobtype-card').forEach(c => c.className = 'jobtype-card');
   document.getElementById('detailInstallNo').className = 'detail-box';
