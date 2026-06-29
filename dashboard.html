@@ -134,6 +134,18 @@ tr:hover td{background:#f8fafc;}
     <option>MuvAds</option>
     <option>NCA_Bus</option>
   </select>
+  <span class="filter-label">ช่าง:</span>
+  <select id="filterTech" class="filter-select" onchange="applyFilters()">
+    <option value="">ทุกช่าง</option>
+  </select>
+  <span class="filter-label">ประเภทงาน:</span>
+  <select id="filterJobtype" class="filter-select" onchange="applyFilters()">
+    <option value="">ทุกประเภทงาน</option>
+    <option>งานติดตั้ง</option>
+    <option>งานลอก</option>
+    <option>งานตรวจรถ</option>
+    <option>Demo&amp;Events</option>
+  </select>
 </div>
 
 <div class="statusbar" id="statusBar">กำลังโหลด...</div>
@@ -198,15 +210,19 @@ function getPeriodRange() {
 
 function applyFilters() {
   const { from, to } = getPeriodRange();
-  const stFilter    = document.getElementById('filterStatus').value;
-  const depotFilter = document.getElementById('filterDepot').value;
-  const mediaFilter = document.getElementById('filterMedia').value;
+  const stFilter      = document.getElementById('filterStatus').value;
+  const depotFilter   = document.getElementById('filterDepot').value;
+  const mediaFilter   = document.getElementById('filterMedia').value;
+  const techFilter    = document.getElementById('filterTech').value;
+  const jobtypeFilter = document.getElementById('filterJobtype').value;
 
   let rows = allRows.filter(r => {
     if (r.ts && (r.ts < from || r.ts > to)) return false;
-    if (stFilter    && r.status !== stFilter)    return false;
-    if (depotFilter && r.depot  !== depotFilter) return false;
-    if (mediaFilter && r.media  !== mediaFilter) return false;
+    if (stFilter      && r.status  !== stFilter)      return false;
+    if (depotFilter   && r.depot   !== depotFilter)   return false;
+    if (mediaFilter   && r.media   !== mediaFilter)   return false;
+    if (techFilter    && r.tech    !== techFilter)     return false;
+    if (jobtypeFilter && r.jobtype !== jobtypeFilter) return false;
     return true;
   });
 
@@ -277,6 +293,32 @@ function renderAll(rows) {
   rows.forEach(r => { if (r.depot) dep[r.depot] = (dep[r.depot]||0)+1; });
   const topDep = Object.entries(dep).sort((a,b)=>b[1]-a[1]).slice(0,8);
   updateHorizBar('chartDepot', topDep.map(d=>d[0]), topDep.map(d=>d[1]), '#7c3aed');
+
+  // Donut: Type of wrap
+  const wrapMap = {};
+  rows.forEach(r => { if (r.wrapType) wrapMap[r.wrapType] = (wrapMap[r.wrapType]||0)+1; });
+  const wrapEntries = Object.entries(wrapMap).sort((a,b)=>b[1]-a[1]);
+  const wrapColors  = ['#2563eb','#059669','#d97706','#dc2626','#7c3aed','#0891b2'];
+  updateDonut('chartWrap', wrapEntries.map(e=>e[0]), wrapEntries.map(e=>e[1]), wrapColors.slice(0, wrapEntries.length));
+
+  // Horizontal bar: ช่าง TOP 10
+  const techMap = {};
+  rows.forEach(r => { if (r.tech) techMap[r.tech] = (techMap[r.tech]||0)+1; });
+  const topTech = Object.entries(techMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  updateHorizBar('chartTech', topTech.map(t=>t[0]), topTech.map(t=>t[1]), '#059669');
+
+  // Bar: monthly trend
+  const monthMap = {};
+  rows.forEach(r => {
+    if (!r.ts) return;
+    const d = new Date(r.ts);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    monthMap[key] = (monthMap[key]||0)+1;
+  });
+  const monthEntries = Object.entries(monthMap).sort((a,b)=>a[0].localeCompare(b[0]));
+  const thMonths = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const monthLabels = monthEntries.map(([k]) => { const [y,m] = k.split('-'); return thMonths[+m-1] + ' ' + (+y+543); });
+  updateBar('chartMonthly', monthLabels, monthEntries.map(e=>e[1]));
 
   // Table
   renderTable(rows);
@@ -391,9 +433,25 @@ function buildUI() {
         <div class="chart-wrap-horiz"><canvas id="chartProduct"></canvas></div>
       </div>
       <div class="chart-card">
-        <h3>อู่ที่ active</h3>
+        <h3>อู่ที่ Active</h3>
         <div class="chart-wrap-horiz"><canvas id="chartDepot"></canvas></div>
       </div>
+    </div>
+
+    <div class="chart-grid-2">
+      <div class="chart-card">
+        <h3>ช่าง Top 10</h3>
+        <div class="chart-wrap-horiz" style="height:260px"><canvas id="chartTech"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Type of wrap</h3>
+        <div class="chart-wrap"><canvas id="chartWrap"></canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-card" style="margin-bottom:12px">
+      <h3>รายการต่อเดือน</h3>
+      <div class="chart-wrap-bar" style="height:220px"><canvas id="chartMonthly"></canvas></div>
     </div>
 
     <div class="table-card">
@@ -427,6 +485,12 @@ function populateDepotFilter(rows) {
   sel.innerHTML = '<option value="">ทุกอู่</option>' + depots.map(d => `<option>${d}</option>`).join('');
 }
 
+function populateTechFilter(rows) {
+  const techs = [...new Set(rows.map(r => r.tech).filter(Boolean))].sort();
+  const sel = document.getElementById('filterTech');
+  sel.innerHTML = '<option value="">ทุกช่าง</option>' + techs.map(t => `<option>${t}</option>`).join('');
+}
+
 function setDefaultDates() {
   const to   = new Date();
   const from = new Date(); from.setDate(from.getDate() - 6);
@@ -445,6 +509,7 @@ function loadAndRender() {
       document.getElementById('updatedAt').textContent = d.updatedAt || '';
       allRows = d.rows || [];
       populateDepotFilter(allRows);
+      populateTechFilter(allRows);
       buildUI();
       applyFilters();
     })
