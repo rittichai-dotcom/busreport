@@ -307,13 +307,18 @@ function renderAll(rows) {
   const topTech = Object.entries(techMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
   updateHorizBar('chartTech', topTech.map(t=>t[0]), topTech.map(t=>t[1]), '#059669');
 
-  // Bar: monthly trend
+  // Bar: monthly trend (ใช้ ts ถ้ามี ไม่งั้นใช้ date string dd/MM/yyyy)
   const monthMap = {};
   rows.forEach(r => {
-    if (!r.ts) return;
-    const d = new Date(r.ts);
-    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-    monthMap[key] = (monthMap[key]||0)+1;
+    let key = null;
+    if (r.ts) {
+      const d = new Date(r.ts);
+      key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    } else if (r.date) {
+      const p = r.date.split('/');
+      if (p.length === 3) key = `${p[2]}-${p[1].padStart(2,'0')}`;
+    }
+    if (key) monthMap[key] = (monthMap[key]||0)+1;
   });
   const monthEntries = Object.entries(monthMap).sort((a,b)=>a[0].localeCompare(b[0]));
   const thMonths = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
