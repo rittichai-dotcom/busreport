@@ -42,8 +42,9 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);fon
 .main{max-width:1400px;margin:0 auto;padding:14px 16px 48px;}
 
 /* Stat cards */
-.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
-@media(max-width:700px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+.stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px;}
+@media(max-width:900px){.stat-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:560px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
 .stat-card{background:#fff;border-radius:10px;border:1px solid var(--border);padding:14px 16px;}
 .stat-card .st-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
 .stat-card .st-num{font-size:32px;font-weight:800;line-height:1;}
@@ -252,14 +253,16 @@ function renderAll(rows) {
     `✅ โหลดข้อมูลสำเร็จ — ${total} รายการ | อัปเดตล่าสุด: ${document.getElementById('updatedAt').textContent}`;
 
   // Stat cards
-  document.getElementById('c-total').textContent   = total;
-  document.getElementById('c-finish').textContent  = finish;
-  document.getElementById('c-swap').textContent    = swap;
-  document.getElementById('c-cancel').textContent  = cancel;
-  document.getElementById('c-total-sub').textContent  = 'รายการทั้งหมด';
-  document.getElementById('c-finish-sub').textContent = pct(finish + installno);
-  document.getElementById('c-swap-sub').textContent   = pct(swap);
-  document.getElementById('c-cancel-sub').textContent = pct(cancel);
+  document.getElementById('c-total').textContent      = total;
+  document.getElementById('c-finish').textContent     = finish;
+  document.getElementById('c-installno').textContent  = installno;
+  document.getElementById('c-swap').textContent       = swap;
+  document.getElementById('c-cancel').textContent     = cancel;
+  document.getElementById('c-total-sub').textContent     = 'รายการทั้งหมด';
+  document.getElementById('c-finish-sub').textContent    = pct(finish);
+  document.getElementById('c-installno-sub').textContent = pct(installno);
+  document.getElementById('c-swap-sub').textContent      = pct(swap);
+  document.getElementById('c-cancel-sub').textContent    = pct(cancel);
 
   // Donut: Status
   const statuses = ['งานเสร็จปกติ','งานเสร็จไม่รับงาน','เปลี่ยนคัน','ยกเลิก'];
@@ -404,6 +407,11 @@ function buildUI() {
         <div class="st-label">✅ งานเสร็จ</div>
         <div class="st-num" id="c-finish" style="color:var(--green)">0</div>
         <div class="st-sub" id="c-finish-sub">0%</div>
+      </div>
+      <div class="stat-card">
+        <div class="st-label">⚠️ เสร็จไม่รับงาน</div>
+        <div class="st-num" id="c-installno" style="color:var(--orange)">0</div>
+        <div class="st-sub" id="c-installno-sub">0%</div>
       </div>
       <div class="stat-card">
         <div class="st-label">🔄 เปลี่ยนคัน</div>
