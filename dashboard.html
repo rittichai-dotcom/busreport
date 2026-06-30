@@ -337,10 +337,9 @@ function renderAll(rows) {
   const posCounts = [
     rows.filter(r=>r.colorBack).length,
     rows.filter(r=>r.colorLeft).length,
-    rows.filter(r=>r.colorRight).length,
-    rows.filter(r=>r.colorNormal).length
+    rows.filter(r=>r.colorRight).length
   ];
-  updateHorizBar('chartColorPos', ['ด้านหลัง','ด้านซ้าย','ด้านขวา','ปกติ'], posCounts, '#d97706');
+  updateHorizBar('chartColorPos', ['ด้านหลัง','ด้านซ้าย','ด้านขวา'], posCounts, ['#f59e0b','#ef4444','#8b5cf6']);
 
   const modelColorMap = {};
   colorRows.forEach(r => { if (r.modelName) modelColorMap[r.modelName] = (modelColorMap[r.modelName]||0)+1; });
