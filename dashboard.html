@@ -328,6 +328,25 @@ function renderAll(rows) {
   const monthLabels = monthEntries.map(([k]) => { const [y,m] = k.split('-'); return thMonths[+m-1] + ' ' + (+y+543); });
   updateBar('chartMonthly', monthLabels, monthEntries.map(e=>e[1]));
 
+  // สีหลุด: % รวม + ตำแหน่ง + Model name
+  const colorRows = rows.filter(r => r.colorBack || r.colorLeft || r.colorRight);
+  const colorPct  = total > 0 ? Math.round(colorRows.length/total*100) : 0;
+  document.getElementById('c-colorpct').textContent     = colorPct + '%';
+  document.getElementById('c-colorpct-sub').textContent = `${colorRows.length} จาก ${total} รายการ`;
+
+  const posCounts = [
+    rows.filter(r=>r.colorBack).length,
+    rows.filter(r=>r.colorLeft).length,
+    rows.filter(r=>r.colorRight).length,
+    rows.filter(r=>r.colorNormal).length
+  ];
+  updateHorizBar('chartColorPos', ['ด้านหลัง','ด้านซ้าย','ด้านขวา','ปกติ'], posCounts, '#d97706');
+
+  const modelColorMap = {};
+  colorRows.forEach(r => { if (r.modelName) modelColorMap[r.modelName] = (modelColorMap[r.modelName]||0)+1; });
+  const topModelColor = Object.entries(modelColorMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  updateHorizBar('chartColorModel', topModelColor.map(m=>m[0]), topModelColor.map(m=>m[1]), '#dc2626');
+
   // Table
   renderTable(rows);
 }
@@ -465,6 +484,23 @@ function buildUI() {
     <div class="chart-card" style="margin-bottom:12px">
       <h3>รายการต่อเดือน</h3>
       <div class="chart-wrap-bar" style="height:220px"><canvas id="chartMonthly"></canvas></div>
+    </div>
+
+    <div class="stat-grid" style="grid-template-columns:1fr 2fr">
+      <div class="stat-card">
+        <div class="st-label">🎨 % สีหลุด</div>
+        <div class="st-num" id="c-colorpct" style="color:var(--orange)">0%</div>
+        <div class="st-sub" id="c-colorpct-sub">0 จาก 0 รายการ</div>
+      </div>
+      <div class="chart-card" style="border:1px solid var(--border)">
+        <h3>สีหลุด — ตำแหน่ง</h3>
+        <div class="chart-wrap-horiz" style="height:120px"><canvas id="chartColorPos"></canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-card" style="margin-bottom:12px">
+      <h3>Model name ที่สีหลุด (Top 10)</h3>
+      <div class="chart-wrap-horiz" style="height:260px"><canvas id="chartColorModel"></canvas></div>
     </div>
 
     <div class="table-card">
