@@ -575,21 +575,19 @@ function loadAndRender() {
 }
 
 function getFilteredRows() {
-  // re-use the same filter logic as applyFilters but just return rows
-  const selStatus = document.getElementById('selStatus').value;
-  const selDepot  = document.getElementById('selDepot').value;
-  const selMedia  = document.getElementById('selMedia').value;
-  const selTech   = document.getElementById('selTech').value;
-  const selJob    = document.getElementById('selJob').value;
-  const from = customFrom; const to = customTo;
+  const { from, to }    = getPeriodRange();
+  const stFilter        = document.getElementById('filterStatus').value;
+  const depotFilter     = document.getElementById('filterDepot').value;
+  const mediaFilter     = document.getElementById('filterMedia').value;
+  const techFilter      = document.getElementById('filterTech').value;
+  const jobtypeFilter   = document.getElementById('filterJobtype').value;
   return allRows.filter(r => {
-    if (from && r.ts && r.ts < from) return false;
-    if (to   && r.ts && r.ts > to)   return false;
-    if (selStatus && r.status  !== selStatus) return false;
-    if (selDepot  && r.depot   !== selDepot)  return false;
-    if (selMedia  && r.media   !== selMedia)  return false;
-    if (selTech   && r.tech    !== selTech)   return false;
-    if (selJob    && r.jobType !== selJob)    return false;
+    if (r.ts && (r.ts < from || r.ts > to)) return false;
+    if (stFilter      && r.status  !== stFilter)      return false;
+    if (depotFilter   && r.depot   !== depotFilter)   return false;
+    if (mediaFilter   && r.media   !== mediaFilter)   return false;
+    if (techFilter    && r.tech    !== techFilter)     return false;
+    if (jobtypeFilter && r.jobtype !== jobtypeFilter) return false;
     return true;
   });
 }
