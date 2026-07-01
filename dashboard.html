@@ -22,6 +22,9 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);fon
 .updated{font-size:11px;color:rgba(255,255,255,0.35);}
 .btn-refresh{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:6px;padding:6px 12px;font-size:12px;font-family:'Sarabun',sans-serif;cursor:pointer;display:flex;align-items:center;gap:4px;}
 .btn-refresh:hover{background:rgba(255,255,255,0.18);}
+.btn-export{background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);color:#6ee7b7;border-radius:6px;padding:6px 12px;font-size:12px;font-family:'Sarabun',sans-serif;cursor:pointer;display:flex;align-items:center;gap:4px;}
+.btn-export:hover{background:rgba(16,185,129,0.25);}
+.export-group{display:flex;gap:6px;}
 
 /* Filter bar */
 .filterbar{background:#fff;border-bottom:1px solid var(--border);padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
@@ -99,6 +102,10 @@ tr:hover td{background:#f8fafc;}
   <div class="topbar-right">
     <span class="updated" id="updatedAt"></span>
     <button class="btn-refresh" id="refreshBtn" onclick="loadAndRender()">↻ รีเฟรช</button>
+    <div class="export-group">
+      <button class="btn-export" onclick="exportCSV()">⬇ CSV</button>
+      <button class="btn-export" onclick="exportExcel()">⬇ Excel</button>
+    </div>
   </div>
 </div>
 
@@ -565,6 +572,71 @@ function loadAndRender() {
       document.getElementById('refreshBtn').textContent = '↻ รีเฟรช';
       document.getElementById('mainContent').innerHTML  = '<p class="error-msg">โหลดไม่ได้ ตรวจสอบการเชื่อมต่อ</p>';
     });
+}
+
+function getFilteredRows() {
+  // re-use the same filter logic as applyFilters but just return rows
+  const selStatus = document.getElementById('selStatus').value;
+  const selDepot  = document.getElementById('selDepot').value;
+  const selMedia  = document.getElementById('selMedia').value;
+  const selTech   = document.getElementById('selTech').value;
+  const selJob    = document.getElementById('selJob').value;
+  const from = customFrom; const to = customTo;
+  return allRows.filter(r => {
+    if (from && r.ts && r.ts < from) return false;
+    if (to   && r.ts && r.ts > to)   return false;
+    if (selStatus && r.status  !== selStatus) return false;
+    if (selDepot  && r.depot   !== selDepot)  return false;
+    if (selMedia  && r.media   !== selMedia)  return false;
+    if (selTech   && r.tech    !== selTech)   return false;
+    if (selJob    && r.jobType !== selJob)    return false;
+    return true;
+  });
+}
+
+function exportCSV() {
+  const rows = getFilteredRows().slice().reverse();
+  const headers = ['ลำดับ','วันที่','ช่าง','ทะเบียน','อู่','สินค้า','Media Type','Type of Wrap','Model','สถานะ','หมายเหตุ'];
+  const lines = [headers.join(',')];
+  rows.forEach((r, i) => {
+    const cols = [
+      i+1,
+      r.date||'',
+      r.tech||'',
+      r.plate||'',
+      r.depot||'',
+      r.product||'',
+      r.media||'',
+      r.wrapType||'',
+      r.modelName||'',
+      r.status||'',
+      (r.note||'').replace(/,/g,' ')
+    ];
+    lines.push(cols.map(v => `"${v}"`).join(','));
+  });
+  const bom = '﻿';
+  const blob = new Blob([bom + lines.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `BusReport_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function exportExcel() {
+  const rows = getFilteredRows().slice().reverse();
+  const headers = ['ลำดับ','วันที่','ช่าง','ทะเบียน','อู่','สินค้า','Media Type','Type of Wrap','Model','สถานะ','หมายเหตุ'];
+  let html = `<html><head><meta charset="UTF-8"></head><body><table>`;
+  html += '<tr>' + headers.map(h => `<th style="background:#1a1a2e;color:#fff;font-weight:bold;padding:6px 10px">${h}</th>`).join('') + '</tr>';
+  rows.forEach((r, i) => {
+    const cols = [i+1, r.date||'', r.tech||'', r.plate||'', r.depot||'', r.product||'', r.media||'', r.wrapType||'', r.modelName||'', r.status||'', r.note||''];
+    html += '<tr>' + cols.map(v => `<td style="padding:4px 8px;border:1px solid #e2e4e8">${v}</td>`).join('') + '</tr>';
+  });
+  html += '</table></body></html>';
+  const blob = new Blob([html], {type:'application/vnd.ms-excel;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `BusReport_${new Date().toISOString().slice(0,10)}.xls`;
+  a.click();
 }
 
 setDefaultDates();
