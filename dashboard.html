@@ -592,28 +592,37 @@ function getFilteredRows() {
   });
 }
 
+const EXPORT_HEADERS = [
+  'ลำดับ','วันที่','ช่าง','อู่','ทะเบียน','สายรถ','หมายเลขรถ',
+  'ชื่อสินค้า','Media Type','ประเภทงาน',
+  'สีหลุด_หลัง','สีหลุด_ซ้าย','สีหลุด_ขวา','สีหลุด_ปกติ',
+  'ตัวถังผุ_หลัง','ตัวถังผุ_ซ้าย','ตัวถังผุ_ขวา','ตัวถังผุ_ปกติ',
+  'ใบอนุญาต_มี_คค','ใบอนุญาต_มี_ตราครุฑ','ใบอนุญาต_ไม่มี_คค','ใบอนุญาต_ไม่มี_ตราครุฑ',
+  'Type of Wrap','Model Name','การลอกภาพโฆษณา','สถานะ',
+  'ทะเบียนใหม่','สาเหตุเปลี่ยน','หมายเหตุเปลี่ยน/สาเหตุไม่รับ','สาเหตุยกเลิก',
+  'หมายเหตุ','จำนวนรูป','ลิงก์โฟลเดอร์'
+];
+
+function getRowCols(r, i) {
+  return [
+    i+1, r.date||'', r.tech||'', r.depot||'', r.plate||'', r.route||'', r.busnum||'',
+    r.product||'', r.media||'', r.jobtype||'',
+    r.colorBack||'', r.colorLeft||'', r.colorRight||'', r.colorNormal||'',
+    r.bodyBack||'', r.bodyLeft||'', r.bodyRight||'', r.bodyNormal||'',
+    r.licMeeKK||'', r.licMeeKrut||'', r.licMaiKK||'', r.licMaiKrut||'',
+    r.wrapType||'', r.modelName||'', r.peelAd||'', r.status||'',
+    r.swapPlate||'', r.swapReason||'', r.swapNote||'', r.cancelReason||'',
+    r.note||'', r.photos||0, r.folder||''
+  ];
+}
+
 function exportCSV() {
   const rows = getFilteredRows().slice().reverse();
-  const headers = ['ลำดับ','วันที่','ช่าง','ทะเบียน','อู่','สินค้า','Media Type','Type of Wrap','Model','สถานะ','หมายเหตุ'];
-  const lines = [headers.join(',')];
+  const lines = [EXPORT_HEADERS.join(',')];
   rows.forEach((r, i) => {
-    const cols = [
-      i+1,
-      r.date||'',
-      r.tech||'',
-      r.plate||'',
-      r.depot||'',
-      r.product||'',
-      r.media||'',
-      r.wrapType||'',
-      r.modelName||'',
-      r.status||'',
-      (r.note||'').replace(/,/g,' ')
-    ];
-    lines.push(cols.map(v => `"${v}"`).join(','));
+    lines.push(getRowCols(r, i).map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
   });
-  const bom = '﻿';
-  const blob = new Blob([bom + lines.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const blob = new Blob(['﻿' + lines.join('\n')], {type:'text/csv;charset=utf-8;'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = `BusReport_${new Date().toISOString().slice(0,10)}.csv`;
@@ -622,12 +631,13 @@ function exportCSV() {
 
 function exportExcel() {
   const rows = getFilteredRows().slice().reverse();
-  const headers = ['ลำดับ','วันที่','ช่าง','ทะเบียน','อู่','สินค้า','Media Type','Type of Wrap','Model','สถานะ','หมายเหตุ'];
+  const thStyle = 'background:#1a1a2e;color:#fff;font-weight:bold;padding:6px 8px;border:1px solid #374151;white-space:nowrap;font-size:12px';
+  const tdStyle = 'padding:4px 8px;border:1px solid #e2e4e8;font-size:12px;white-space:nowrap';
   let html = `<html><head><meta charset="UTF-8"></head><body><table>`;
-  html += '<tr>' + headers.map(h => `<th style="background:#1a1a2e;color:#fff;font-weight:bold;padding:6px 10px">${h}</th>`).join('') + '</tr>';
+  html += '<tr>' + EXPORT_HEADERS.map(h => `<th style="${thStyle}">${h}</th>`).join('') + '</tr>';
   rows.forEach((r, i) => {
-    const cols = [i+1, r.date||'', r.tech||'', r.plate||'', r.depot||'', r.product||'', r.media||'', r.wrapType||'', r.modelName||'', r.status||'', r.note||''];
-    html += '<tr>' + cols.map(v => `<td style="padding:4px 8px;border:1px solid #e2e4e8">${v}</td>`).join('') + '</tr>';
+    const cols = getRowCols(r, i);
+    html += '<tr>' + cols.map(v => `<td style="${tdStyle}">${v}</td>`).join('') + '</tr>';
   });
   html += '</table></body></html>';
   const blob = new Blob([html], {type:'application/vnd.ms-excel;charset=utf-8'});
