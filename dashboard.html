@@ -632,19 +632,24 @@ function exportCSV() {
 function exportExcel() {
   const rows = getFilteredRows().slice().reverse();
   const thStyle = 'background:#1a1a2e;color:#fff;font-weight:bold;padding:6px 8px;border:1px solid #374151;white-space:nowrap;font-size:12px';
-  const tdStyle  = 'padding:4px 8px;border:1px solid #e2e4e8;font-size:12px;white-space:nowrap';
-  const tdTxt    = tdStyle + ';mso-number-format:"@"';
-  let html = `<html><head><meta charset="UTF-8"></head><body><table>`;
-  html += '<tr>' + EXPORT_HEADERS.map(h => `<th style="${thStyle}">${h}</th>`).join('') + '</tr>';
+  const tdStyle = 'padding:4px 8px;border:1px solid #e2e4e8;font-size:12px;white-space:nowrap;mso-number-format:"@"';
+  const esc = v => String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="UTF-8">
+<xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
+<x:Name>BusReport</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml></head><body><table>`;
+  html += '<tr>' + EXPORT_HEADERS.map(h => `<th style="${thStyle}">${esc(h)}</th>`).join('') + '</tr>';
   rows.forEach((r, i) => {
     const cols = getRowCols(r, i);
     html += '<tr>' + cols.map((v, ci) => {
-      const style = (ci >= 4) ? tdTxt : tdStyle;
-      return `<td style="${style}">${v}</td>`;
+      const sv = esc(v);
+      if (ci === 0) return `<td style="${tdStyle}">${sv}</td>`;
+      return `<td style="${tdStyle}" x:str="${sv}">${sv}</td>`;
     }).join('') + '</tr>';
   });
   html += '</table></body></html>';
-  const blob = new Blob([html], {type:'application/vnd.ms-excel;charset=utf-8'});
+  const blob = new Blob(['﻿' + html], {type:'application/vnd.ms-excel;charset=utf-8'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = `BusReport_${new Date().toISOString().slice(0,10)}.xls`;
