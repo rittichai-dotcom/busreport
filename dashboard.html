@@ -295,6 +295,8 @@ function applyFilters() {
     );
   }
 
+  _ovFilter = 'all';
+  document.querySelectorAll('.stat-grid .stat-card.clickable').forEach(c => c.classList.remove('selected'));
   renderAll(rows);
 }
 
@@ -445,15 +447,73 @@ function updateHorizBar(id, labels, data, color='#2563eb') {
   });
 }
 
-function renderTable(rows) {
+let _ovFilter = 'all';
+let _ovRows   = [];
+
+function filterOverviewTable(filter, cardEl) {
+  _ovFilter = filter;
+  document.querySelectorAll('.stat-grid .stat-card.clickable').forEach(c => c.classList.remove('selected'));
+  if (cardEl && filter !== 'all') cardEl.classList.add('selected');
+  renderTable(_ovRows, filter);
+  document.getElementById('tableBody').closest('.table-card').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function renderTable(rows, filter) {
+  _ovRows = rows;
+  if (filter === undefined) filter = _ovFilter;
+  _ovFilter = filter;
+
+  const OV_EXTRA_HEAD = {
+    'ยกเลิก':             '<th>สาเหตุยกเลิก</th><th>หมายเหตุ</th>',
+    'งานเสร็จไม่รับงาน': '<th>สาเหตุไม่รับงาน</th><th>ตำแหน่งที่มีปัญหา</th>',
+    'เปลี่ยนคัน':        '<th>ทะเบียนใหม่</th><th>สาเหตุเปลี่ยน</th>',
+    'color':              '<th>ตำแหน่งสีหลุด</th>'
+  };
+  const ovExtraCell = (r, f) => {
+    if (f === 'ยกเลิก')             return `<td>${r.cancelReason||'-'}</td><td>${r.note||'-'}</td>`;
+    if (f === 'งานเสร็จไม่รับงาน') return `<td>${r.swapNote||'-'}</td><td>${r.note||'-'}</td>`;
+    if (f === 'เปลี่ยนคัน')        return `<td style="font-weight:700;color:var(--blue)">${r.swapPlate||'-'}</td><td>${r.swapReason||'-'}</td>`;
+    if (f === 'color') {
+      const pos = [r.colorBack?'หลัง':'', r.colorLeft?'ซ้าย':'', r.colorRight?'ขวา':''].filter(Boolean).join(', ');
+      return `<td>${pos||'-'}</td>`;
+    }
+    return '';
+  };
+
+  const extraH = OV_EXTRA_HEAD[filter] || '';
+  const baseColspan = 9 + (extraH ? (filter === 'color' ? 1 : 2) : 0);
+
+  // Update thead
+  document.getElementById('ovTableHead').innerHTML =
+    `<th>#</th><th>วันที่</th><th>ช่าง</th><th>ทะเบียน</th>` +
+    `<th>อู่</th><th>สินค้า</th><th>Media Type</th><th>สถานะ</th><th>📁</th>${extraH}`;
+
+  // Filter badge
+  const badge = document.getElementById('ovFilterBadge');
+  const labelMap = {
+    'งานเสร็จปกติ':'✅ งานเสร็จ', 'งานเสร็จไม่รับงาน':'⚠️ เสร็จไม่รับงาน',
+    'เปลี่ยนคัน':'🔄 เปลี่ยนคัน', 'ยกเลิก':'❌ ยกเลิก', 'color':'🎨 สีหลุด'
+  };
+  if (filter && filter !== 'all') {
+    badge.style.display = 'block';
+    document.getElementById('ovFilterLabel').textContent = labelMap[filter] || filter;
+  } else {
+    badge.style.display = 'none';
+  }
+
+  // Apply row filter
+  let display = rows;
+  if (filter === 'color') display = rows.filter(r => r.colorBack || r.colorLeft || r.colorRight);
+  else if (filter && filter !== 'all') display = rows.filter(r => r.status === filter);
+  display = display.slice().reverse();
+
   const tbody = document.getElementById('tableBody');
   const count = document.getElementById('tableCount');
-  const display = rows.slice().reverse();
   count.textContent = `รายละเอียด — ${display.length} รายการ`;
-  if (!display.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">ไม่มีข้อมูล</td></tr>'; return; }
+  if (!display.length) { tbody.innerHTML = `<tr><td colspan="${baseColspan}" class="empty">ไม่มีข้อมูล</td></tr>`; return; }
   tbody.innerHTML = display.map((r, i) => {
-    const badge = STATUS_BADGE[r.status] || 'badge-blue';
-    const icon  = STATUS_ICON[r.status]  || '';
+    const bclass = STATUS_BADGE[r.status] || 'badge-blue';
+    const icon   = STATUS_ICON[r.status]  || '';
     const folder = r.folder ? `<a href="${r.folder}" target="_blank" class="link-folder">📁 เปิด</a>` : '-';
     return `<tr>
       <td style="text-align:center;color:var(--muted)">${i+1}</td>
@@ -463,8 +523,9 @@ function renderTable(rows) {
       <td>${r.depot||'-'}</td>
       <td>${r.product||'-'}</td>
       <td>${r.media||'-'}</td>
-      <td><span class="badge ${badge}">${icon} ${r.status||'-'}</span></td>
+      <td><span class="badge ${bclass}">${icon} ${r.status||'-'}</span></td>
       <td style="text-align:center">${folder}</td>
+      ${ovExtraCell(r, filter)}
     </tr>`;
   }).join('');
 }
@@ -473,27 +534,27 @@ function renderTable(rows) {
 function buildUI() {
   document.getElementById('mainContent').innerHTML = `
     <div class="stat-grid">
-      <div class="stat-card">
+      <div class="stat-card clickable" id="ov-card-all" onclick="filterOverviewTable('all',this)">
         <div class="st-label">รายการทั้งหมด</div>
         <div class="st-num" id="c-total" style="color:var(--blue)">0</div>
         <div class="st-sub" id="c-total-sub">—</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card clickable" id="ov-card-finish" onclick="filterOverviewTable('งานเสร็จปกติ',this)">
         <div class="st-label">✅ งานเสร็จ</div>
         <div class="st-num" id="c-finish" style="color:var(--green)">0</div>
         <div class="st-sub" id="c-finish-sub">0%</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card clickable" id="ov-card-installno" onclick="filterOverviewTable('งานเสร็จไม่รับงาน',this)">
         <div class="st-label">⚠️ เสร็จไม่รับงาน</div>
         <div class="st-num" id="c-installno" style="color:var(--orange)">0</div>
         <div class="st-sub" id="c-installno-sub">0%</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card clickable" id="ov-card-swap" onclick="filterOverviewTable('เปลี่ยนคัน',this)">
         <div class="st-label">🔄 เปลี่ยนคัน</div>
         <div class="st-num" id="c-swap" style="color:var(--blue)">0</div>
         <div class="st-sub" id="c-swap-sub">0%</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card clickable" id="ov-card-cancel" onclick="filterOverviewTable('ยกเลิก',this)">
         <div class="st-label">❌ ยกเลิก</div>
         <div class="st-num" id="c-cancel" style="color:var(--red)">0</div>
         <div class="st-sub" id="c-cancel-sub">0%</div>
@@ -532,17 +593,17 @@ function buildUI() {
     </div>
 
     <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">
-      <div class="stat-card">
+      <div class="stat-card clickable" id="ov-card-color" onclick="filterOverviewTable('color',this)">
         <div class="st-label">🎨 อัตรารถสีหลุด</div>
         <div class="st-num" id="c-colorpct" style="color:var(--orange)">0%</div>
         <div class="st-sub" id="c-colorpct-sub">0 จาก 0 รายการ</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card clickable" id="ov-card-cancel2" onclick="filterOverviewTable('ยกเลิก',document.getElementById('ov-card-cancel'))">
         <div class="st-label">❌ อัตรายกเลิก</div>
         <div class="st-num" id="c-cancel2" style="color:var(--red)">0%</div>
         <div class="st-sub" id="c-cancel2-sub">0 รายการ</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card clickable" id="ov-card-installno2" onclick="filterOverviewTable('งานเสร็จไม่รับงาน',document.getElementById('ov-card-installno'))">
         <div class="st-label">⚠️ อัตราไม่รับงาน</div>
         <div class="st-num" id="c-installno2" style="color:var(--orange)">0%</div>
         <div class="st-sub" id="c-installno2-sub">0 รายการ</div>
@@ -565,10 +626,14 @@ function buildUI() {
         <h3 id="tableCount">รายละเอียด</h3>
         <input class="search-input" placeholder="🔍 ค้นหา ทะเบียน / สินค้า / ช่าง / อู่..." oninput="onSearch(this.value)">
       </div>
+      <div id="ovFilterBadge" style="display:none;padding:6px 12px 0;font-size:13px;color:var(--muted)">
+        กรองตาม: <strong id="ovFilterLabel"></strong>
+        <span onclick="filterOverviewTable('all',document.getElementById('ov-card-all'))" style="cursor:pointer;margin-left:8px;color:var(--blue)">✕ ล้างตัวกรอง</span>
+      </div>
       <div class="table-wrap">
         <table>
           <thead>
-            <tr>
+            <tr id="ovTableHead">
               <th>#</th><th>วันที่</th><th>ช่าง</th><th>ทะเบียน</th>
               <th>อู่</th><th>สินค้า</th><th>Media Type</th><th>สถานะ</th><th>📁</th>
             </tr>
