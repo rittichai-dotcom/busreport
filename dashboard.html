@@ -293,18 +293,6 @@ function renderAll(rows) {
   }
   updateBar('chartDaily', days.map(d => d.label), days.map(d => d.count));
 
-  // Horizontal bar: top products
-  const prod = {};
-  rows.forEach(r => { if (r.product) prod[r.product] = (prod[r.product]||0)+1; });
-  const topProd = Object.entries(prod).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  updateHorizBar('chartProduct', topProd.map(p=>p[0]), topProd.map(p=>p[1]));
-
-  // Horizontal bar: top depots
-  const dep = {};
-  rows.forEach(r => { if (r.depot) dep[r.depot] = (dep[r.depot]||0)+1; });
-  const topDep = Object.entries(dep).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  updateHorizBar('chartDepot', topDep.map(d=>d[0]), topDep.map(d=>d[1]), '#7c3aed');
-
   // Donut: Type of wrap
   const wrapMap = {};
   rows.forEach(r => { if (r.wrapType) wrapMap[r.wrapType] = (wrapMap[r.wrapType]||0)+1; });
@@ -312,11 +300,16 @@ function renderAll(rows) {
   const wrapColors  = ['#2563eb','#059669','#d97706','#dc2626','#7c3aed','#0891b2'];
   updateDonut('chartWrap', wrapEntries.map(e=>e[0]), wrapEntries.map(e=>e[1]), wrapColors.slice(0, wrapEntries.length));
 
-  // Horizontal bar: ช่าง TOP 10
-  const techMap = {};
-  rows.forEach(r => { if (r.tech) techMap[r.tech] = (techMap[r.tech]||0)+1; });
-  const topTech = Object.entries(techMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  updateHorizBar('chartTech', topTech.map(t=>t[0]), topTech.map(t=>t[1]), '#059669');
+  // Horiz bar: สาเหตุยกเลิก
+  const cancelMap = {};
+  rows.filter(r => r.status === 'ยกเลิก').forEach(r => {
+    const key = r.cancelReason || 'ไม่ระบุ';
+    cancelMap[key] = (cancelMap[key]||0)+1;
+  });
+  const cancelEntries = Object.entries(cancelMap).sort((a,b)=>b[1]-a[1]);
+  const cancelTotal = cancelEntries.reduce((s,[,v])=>s+v,0);
+  const cancelLabels = cancelEntries.map(([k,v]) => `${k} (${cancelTotal>0?Math.round(v/cancelTotal*100):0}%)`);
+  updateHorizBar('chartCancel', cancelLabels, cancelEntries.map(e=>e[1]), '#dc2626');
 
   // Bar: monthly trend (ใช้ ts ถ้ามี ไม่งั้นใช้ date string dd/MM/yyyy)
   const monthMap = {};
@@ -335,6 +328,12 @@ function renderAll(rows) {
   const thMonths = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
   const monthLabels = monthEntries.map(([k]) => { const [y,m] = k.split('-'); return thMonths[+m-1] + ' ' + (+y+543); });
   updateBar('chartMonthly', monthLabels, monthEntries.map(e=>e[1]));
+
+  // อัตราการ stat cards ใหม่
+  document.getElementById('c-cancel2').textContent       = pct(cancel);
+  document.getElementById('c-cancel2-sub').textContent   = `${cancel} รายการ`;
+  document.getElementById('c-installno2').textContent    = pct(installno);
+  document.getElementById('c-installno2-sub').textContent= `${installno} รายการ`;
 
   // สีหลุด: % รวม + ตำแหน่ง + Model name
   const colorRows = rows.filter(r => r.colorBack || r.colorLeft || r.colorRight);
@@ -468,23 +467,12 @@ function buildUI() {
 
     <div class="chart-grid-2">
       <div class="chart-card">
-        <h3>สินค้า Top 10</h3>
-        <div class="chart-wrap-horiz"><canvas id="chartProduct"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <h3>อู่ที่ Active</h3>
-        <div class="chart-wrap-horiz"><canvas id="chartDepot"></canvas></div>
-      </div>
-    </div>
-
-    <div class="chart-grid-2">
-      <div class="chart-card">
-        <h3>ช่าง Top 10</h3>
-        <div class="chart-wrap-horiz" style="height:260px"><canvas id="chartTech"></canvas></div>
-      </div>
-      <div class="chart-card">
         <h3>Type of wrap</h3>
         <div class="chart-wrap"><canvas id="chartWrap"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>❌ สาเหตุงานยกเลิก (%)</h3>
+        <div class="chart-wrap-horiz"><canvas id="chartCancel"></canvas></div>
       </div>
     </div>
 
@@ -493,21 +481,33 @@ function buildUI() {
       <div class="chart-wrap-bar" style="height:220px"><canvas id="chartMonthly"></canvas></div>
     </div>
 
-    <div class="stat-grid" style="grid-template-columns:1fr 2fr">
+    <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">
       <div class="stat-card">
-        <div class="st-label">🎨 % สีหลุด</div>
+        <div class="st-label">🎨 อัตรารถสีหลุด</div>
         <div class="st-num" id="c-colorpct" style="color:var(--orange)">0%</div>
         <div class="st-sub" id="c-colorpct-sub">0 จาก 0 รายการ</div>
       </div>
-      <div class="chart-card" style="border:1px solid var(--border)">
-        <h3>สีหลุด — ตำแหน่ง</h3>
-        <div class="chart-wrap-horiz" style="height:120px"><canvas id="chartColorPos"></canvas></div>
+      <div class="stat-card">
+        <div class="st-label">❌ อัตรายกเลิก</div>
+        <div class="st-num" id="c-cancel2" style="color:var(--red)">0%</div>
+        <div class="st-sub" id="c-cancel2-sub">0 รายการ</div>
+      </div>
+      <div class="stat-card">
+        <div class="st-label">⚠️ อัตราไม่รับงาน</div>
+        <div class="st-num" id="c-installno2" style="color:var(--orange)">0%</div>
+        <div class="st-sub" id="c-installno2-sub">0 รายการ</div>
       </div>
     </div>
 
-    <div class="chart-card" style="margin-bottom:12px">
-      <h3>Model name ที่สีหลุด (Top 10)</h3>
-      <div class="chart-wrap-horiz" style="height:260px"><canvas id="chartColorModel"></canvas></div>
+    <div class="chart-grid-2" style="margin-bottom:12px">
+      <div class="chart-card" style="border:1px solid var(--border)">
+        <h3>สีหลุด — ตำแหน่ง</h3>
+        <div class="chart-wrap-horiz" style="height:130px"><canvas id="chartColorPos"></canvas></div>
+      </div>
+      <div class="chart-card" style="border:1px solid var(--border)">
+        <h3>Model name ที่สีหลุด</h3>
+        <div class="chart-wrap-horiz" style="height:130px"><canvas id="chartColorModel"></canvas></div>
+      </div>
     </div>
 
     <div class="table-card">
