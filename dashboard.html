@@ -90,6 +90,24 @@ tr:hover td{background:#f8fafc;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .error-msg{text-align:center;padding:40px;color:var(--red);}
 .empty{text-align:center;padding:20px;color:var(--muted);}
+
+/* Tab nav */
+.tabbar{background:#fff;border-bottom:2px solid var(--border);padding:0 18px;display:flex;gap:0;}
+.tab-btn{background:none;border:none;border-bottom:3px solid transparent;padding:12px 20px;font-size:13px;font-weight:700;font-family:'Sarabun',sans-serif;color:var(--muted);cursor:pointer;margin-bottom:-2px;transition:color .15s;}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue);}
+.tab-btn:hover:not(.active){color:var(--text);}
+
+/* Tech history */
+.tech-filterbar{background:#fff;border-bottom:1px solid var(--border);padding:10px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+.tech-select{border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;font-family:'Sarabun',sans-serif;color:var(--text);background:#fff;min-width:180px;}
+.tech-stat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px;}
+@media(max-width:1100px){.tech-stat-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:560px){.tech-stat-grid{grid-template-columns:repeat(2,1fr);}}
+.tech-hero{background:linear-gradient(135deg,#1a1a2e,#1e3a5f);border-radius:12px;padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;gap:20px;}
+.tech-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#059669);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;flex-shrink:0;}
+.tech-hero-name{font-size:22px;font-weight:800;color:#fff;}
+.tech-hero-sub{font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;}
+.tech-empty{text-align:center;padding:60px;color:var(--muted);font-size:15px;}
 </style>
 </head>
 <body>
@@ -157,10 +175,37 @@ tr:hover td{background:#f8fafc;}
   </select>
 </div>
 
+<div class="tabbar">
+  <button class="tab-btn active" id="tab-overview" onclick="switchTab('overview')">📊 ภาพรวม</button>
+  <button class="tab-btn" id="tab-tech" onclick="switchTab('tech')">👤 ประวัติช่าง</button>
+</div>
+
 <div class="statusbar" id="statusBar">กำลังโหลด...</div>
 
-<div class="main" id="mainContent">
-  <div class="spinner-wrap"><div class="spinner"></div></div>
+<!-- Tab: ภาพรวม -->
+<div id="view-overview">
+  <div class="main" id="mainContent">
+    <div class="spinner-wrap"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<!-- Tab: ประวัติช่าง -->
+<div id="view-tech" style="display:none">
+  <div class="tech-filterbar">
+    <span class="filter-label">เลือกช่าง:</span>
+    <select id="techSelect" class="tech-select" onchange="renderTechView()">
+      <option value="">— เลือกชื่อช่าง —</option>
+    </select>
+    <span class="filter-label">ช่วงเวลา:</span>
+    <div class="period-group">
+      <button class="period-btn active" id="tpBtn-all"   onclick="setTechPeriod('all',this)">ทั้งหมด</button>
+      <button class="period-btn" id="tpBtn-month" onclick="setTechPeriod('month',this)">เดือนนี้</button>
+      <button class="period-btn" id="tpBtn-7d"    onclick="setTechPeriod('7d',this)">7 วัน</button>
+    </div>
+  </div>
+  <div class="main">
+    <div id="techContent"><div class="tech-empty">เลือกชื่อช่างเพื่อดูประวัติ</div></div>
+  </div>
 </div>
 
 <script>
@@ -566,6 +611,7 @@ function loadAndRender() {
       allRows = d.rows || [];
       populateDepotFilter(allRows);
       populateTechFilter(allRows);
+      populateTechSelect(allRows);
       buildUI();
       applyFilters();
     })
@@ -656,6 +702,181 @@ function exportExcel() {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'BusReport');
   XLSX.writeFile(wb, `BusReport_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+// ── Tab switching ─────────────────────────────────────────────
+let currentTab = 'overview';
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('view-overview').style.display = tab === 'overview' ? '' : 'none';
+  document.getElementById('view-tech').style.display     = tab === 'tech'     ? '' : 'none';
+  document.getElementById('tab-overview').classList.toggle('active', tab === 'overview');
+  document.getElementById('tab-tech').classList.toggle('active', tab === 'tech');
+  if (tab === 'tech') renderTechView();
+}
+
+// ── Tech history ──────────────────────────────────────────────
+let techPeriod = 'all';
+let techCharts = {};
+
+function populateTechSelect(rows) {
+  const techs = [...new Set(rows.map(r => r.tech).filter(Boolean))].sort();
+  const sel = document.getElementById('techSelect');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— เลือกชื่อช่าง —</option>' +
+    techs.map(t => `<option${t===cur?' selected':''}>${t}</option>`).join('');
+}
+
+function setTechPeriod(p, btn) {
+  techPeriod = p;
+  document.querySelectorAll('#view-tech .period-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTechView();
+}
+
+function getTechRows() {
+  const tech = document.getElementById('techSelect').value;
+  if (!tech) return [];
+  let rows = allRows.filter(r => r.tech === tech);
+  const now = new Date(); now.setHours(23,59,59,999);
+  if (techPeriod === 'month') {
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    rows = rows.filter(r => r.ts && r.ts >= start.getTime());
+  } else if (techPeriod === '7d') {
+    const start = new Date(); start.setDate(start.getDate()-6); start.setHours(0,0,0,0);
+    rows = rows.filter(r => r.ts && r.ts >= start.getTime());
+  }
+  return rows;
+}
+
+function renderTechView() {
+  const tech = document.getElementById('techSelect').value;
+  const box  = document.getElementById('techContent');
+  if (!tech) { box.innerHTML = '<div class="tech-empty">เลือกชื่อช่างเพื่อดูประวัติ</div>'; return; }
+
+  const rows    = getTechRows();
+  const total   = rows.length;
+  const finish  = rows.filter(r => r.status === 'งานเสร็จปกติ').length;
+  const installno = rows.filter(r => r.status === 'งานเสร็จไม่รับงาน').length;
+  const swap    = rows.filter(r => r.status === 'เปลี่ยนคัน').length;
+  const cancel  = rows.filter(r => r.status === 'ยกเลิก').length;
+  const colorN  = rows.filter(r => r.colorBack || r.colorLeft || r.colorRight).length;
+  const pct     = n => total > 0 ? Math.round(n/total*100) + '%' : '0%';
+  const initial = tech.charAt(0).toUpperCase();
+
+  box.innerHTML = `
+    <div class="tech-hero">
+      <div class="tech-avatar">${initial}</div>
+      <div>
+        <div class="tech-hero-name">${tech}</div>
+        <div class="tech-hero-sub">ข้อมูลงานสะสม ${total} รายการ</div>
+      </div>
+    </div>
+
+    <div class="tech-stat-grid">
+      <div class="stat-card">
+        <div class="st-label">งานทั้งหมด</div>
+        <div class="st-num" style="color:var(--blue)">${total}</div>
+        <div class="st-sub">รายการ</div>
+      </div>
+      <div class="stat-card">
+        <div class="st-label">✅ งานเสร็จ</div>
+        <div class="st-num" style="color:var(--green)">${finish}</div>
+        <div class="st-sub">${pct(finish)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="st-label">⚠️ ไม่รับงาน</div>
+        <div class="st-num" style="color:var(--orange)">${installno}</div>
+        <div class="st-sub">${pct(installno)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="st-label">🔄 เปลี่ยนคัน</div>
+        <div class="st-num" style="color:var(--blue)">${swap}</div>
+        <div class="st-sub">${pct(swap)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="st-label">❌ ยกเลิก</div>
+        <div class="st-num" style="color:var(--red)">${cancel}</div>
+        <div class="st-sub">${pct(cancel)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="st-label">🎨 สีหลุด</div>
+        <div class="st-num" style="color:var(--orange)">${colorN}</div>
+        <div class="st-sub">${pct(colorN)}</div>
+      </div>
+    </div>
+
+    <div class="chart-grid-2" style="margin-bottom:12px">
+      <div class="chart-card">
+        <h3>งานรายเดือน</h3>
+        <div class="chart-wrap-bar" style="height:200px"><canvas id="chartTechMonthly"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>สัดส่วนสถานะ</h3>
+        <div class="chart-wrap"><canvas id="chartTechStatus"></canvas></div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header">
+        <h3>ประวัติงาน — ${tech} (${total} รายการ)</h3>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>#</th><th>วันที่</th><th>ทะเบียน</th><th>อู่</th>
+            <th>สินค้า</th><th>Type</th><th>Model</th><th>สถานะ</th><th>📁</th>
+          </tr></thead>
+          <tbody>${rows.slice().reverse().map((r,i) => {
+            const badge = STATUS_BADGE[r.status]||'badge-blue';
+            const icon  = STATUS_ICON[r.status]||'';
+            const folder = r.folder ? `<a href="${r.folder}" target="_blank" class="link-folder">📁</a>` : '-';
+            return `<tr>
+              <td style="color:var(--muted);text-align:center">${i+1}</td>
+              <td>${r.date||'-'}</td>
+              <td style="font-weight:700;color:var(--green)">${r.plate||'-'}</td>
+              <td>${r.depot||'-'}</td>
+              <td>${r.product||'-'}</td>
+              <td>${r.wrapType||'-'}</td>
+              <td>${r.modelName||'-'}</td>
+              <td><span class="badge ${badge}">${icon} ${r.status||'-'}</span></td>
+              <td style="text-align:center">${folder}</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+
+  // Monthly chart
+  const mMap = {};
+  rows.forEach(r => {
+    let key = null;
+    if (r.ts) { const d=new Date(r.ts); key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+    else if (r.date) { const p=r.date.split('/'); if(p.length===3) key=`${p[2]}-${p[1].padStart(2,'0')}`; }
+    if (key) mMap[key] = (mMap[key]||0)+1;
+  });
+  const mEntries = Object.entries(mMap).sort((a,b)=>a[0].localeCompare(b[0]));
+  const thM = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const mLabels = mEntries.map(([k])=>{ const [y,m]=k.split('-'); return thM[+m-1]+' '+(+y+543); });
+
+  Object.values(techCharts).forEach(c => c.destroy());
+  techCharts = {};
+  const ctxM = document.getElementById('chartTechMonthly');
+  if (ctxM) techCharts.monthly = new Chart(ctxM, {
+    type:'bar', data:{labels:mLabels, datasets:[{data:mEntries.map(e=>e[1]), backgroundColor:'#2563eb', borderRadius:5}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{family:'Sarabun'}}},x:{ticks:{font:{family:'Sarabun',size:11}}}}}
+  });
+
+  const ctxS = document.getElementById('chartTechStatus');
+  const statuses = ['งานเสร็จปกติ','งานเสร็จไม่รับงาน','เปลี่ยนคัน','ยกเลิก'];
+  const stC = statuses.map(s=>rows.filter(r=>r.status===s).length);
+  if (ctxS) techCharts.status = new Chart(ctxS, {
+    type:'doughnut',
+    data:{labels:statuses, datasets:[{data:stC, backgroundColor:statuses.map(s=>STATUS_COLORS[s]), borderWidth:2, borderColor:'#fff', hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
+      plugins:{legend:{position:'right',labels:{font:{family:'Sarabun',size:12},boxWidth:12,padding:8}}}}
+  });
 }
 
 setDefaultDates();
