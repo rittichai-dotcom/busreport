@@ -1116,24 +1116,34 @@ async function handleSubmit() {
       try { json = JSON.parse(text); } catch(e) { throw new Error('response error'); }
       if (json.status !== 'ok') throw new Error(json.message || 'upload failed');
     }
-    for (let i = 0; i < photos.length; i++) {
-      showLoading(true, `กำลังอัปโหลด ${i+1}/${photos.length} รูป...`);
+    const BATCH = 3;
+    let globalIdx = 0;
+    for (let i = 0; i < photos.length; i += BATCH) {
+      const batch = photos.slice(i, i + BATCH);
+      showLoading(true, `กำลังอัปโหลด ${Math.min(i + BATCH, photos.length)}/${photos.length} รูป...`);
       const payload = {
         ...basePayload,
-        photos:      [photos[i]],
-        chunkIndex:  i,
+        photos:      batch,
+        chunkIndex:  globalIdx,
         totalChunks: photos.length,
-        isLastChunk: (i === photos.length - 1)
+        isLastChunk: (i + BATCH >= photos.length)
       };
-      const res  = await fetchWithRetry(SCRIPT_URL, {
-        method: 'POST', body: JSON.stringify(payload), redirect: 'follow',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-      });
-      const text = await res.text();
-      if (!text || !text.includes('{')) throw new Error('server ไม่ตอบกลับ');
-      let json;
-      try { json = JSON.parse(text); } catch(e) { throw new Error('response error'); }
-      if (json.status !== 'ok') throw new Error(json.message || 'upload failed');
+      globalIdx += batch.length;
+      let ok = false;
+      for (let attempt = 0; attempt < 3 && !ok; attempt++) {
+        if (attempt > 0) await new Promise(r => setTimeout(r, 2000 * attempt));
+        try {
+          const res  = await fetchWithRetry(SCRIPT_URL, {
+            method: 'POST', body: JSON.stringify(payload), redirect: 'follow',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+          });
+          const text = await res.text();
+          if (!text || !text.includes('{')) continue;
+          const json = JSON.parse(text);
+          if (json.status === 'ok') { ok = true; }
+        } catch(e) { /* retry */ }
+      }
+      if (!ok) throw new Error(`อัปโหลดรูปที่ ${i+1}-${Math.min(i+BATCH,photos.length)} ไม่สำเร็จ ลองใหม่`);
     }
     showLoading(false);
     showSuccessOverlay();
