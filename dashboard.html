@@ -903,13 +903,42 @@ function renderTechTable(rows, filter) {
       : '';
   }
 
+  // extra columns per filter
+  const extraHead = {
+    'ยกเลิก':              '<th>สาเหตุยกเลิก</th><th>หมายเหตุ</th>',
+    'งานเสร็จไม่รับงาน':  '<th>สาเหตุไม่รับงาน</th><th>ตำแหน่งที่มีปัญหา</th>',
+    'เปลี่ยนคัน':         '<th>ทะเบียนใหม่</th><th>สาเหตุเปลี่ยน</th>',
+    'color':               '<th>ตำแหน่งสีหลุด</th>'
+  };
+  const extraCell = (r, f) => {
+    if (f === 'ยกเลิก')             return `<td>${r.cancelReason||'-'}</td><td style="color:var(--muted)">${r.note||'-'}</td>`;
+    if (f === 'งานเสร็จไม่รับงาน') return `<td>${r.swapNote||'-'}</td><td>${r.note||'-'}</td>`;
+    if (f === 'เปลี่ยนคัน')        return `<td style="font-weight:700;color:var(--blue)">${r.swapPlate||'-'}</td><td>${r.swapReason||'-'}</td>`;
+    if (f === 'color') {
+      const pos = [r.colorBack?'หลัง':'', r.colorLeft?'ซ้าย':'', r.colorRight?'ขวา':''].filter(Boolean).join(', ');
+      return `<td>${pos||'-'}</td>`;
+    }
+    return '';
+  };
+  const colSpan = (extraHead[filter] ? extraHead[filter].match(/<th>/g).length : 0) + 9;
+
+  // Update thead
+  const thead = tbody.closest('table').querySelector('thead tr');
+  if (thead) {
+    thead.innerHTML = `<th>#</th><th>วันที่</th><th>ทะเบียน</th><th>อู่</th>
+      <th>สินค้า</th><th>Type</th><th>Model</th><th>สถานะ</th>
+      ${extraHead[filter]||''}
+      <th>📁</th>`;
+  }
+
   tbody.innerHTML = display.map((r, i) => {
     const bdg = STATUS_BADGE[r.status]||'badge-blue';
     const ico = STATUS_ICON[r.status]||'';
-    const color = (r.colorBack||r.colorLeft||r.colorRight) ? ' style="background:#fffbeb"' : '';
-    const colorDot = (r.colorBack||r.colorLeft||r.colorRight) ? ' 🎨' : '';
+    const isColor = r.colorBack||r.colorLeft||r.colorRight;
+    const rowStyle = isColor ? ' style="background:#fffbeb"' : '';
+    const colorDot = isColor ? ' 🎨' : '';
     const folder = r.folder ? `<a href="${r.folder}" target="_blank" class="link-folder">📁</a>` : '-';
-    return `<tr${color}>
+    return `<tr${rowStyle}>
       <td style="color:var(--muted);text-align:center">${i+1}</td>
       <td>${r.date||'-'}</td>
       <td style="font-weight:700;color:var(--green)">${r.plate||'-'}${colorDot}</td>
@@ -918,9 +947,10 @@ function renderTechTable(rows, filter) {
       <td>${r.wrapType||'-'}</td>
       <td>${r.modelName||'-'}</td>
       <td><span class="badge ${bdg}">${ico} ${r.status||'-'}</span></td>
+      ${extraCell(r, filter)}
       <td style="text-align:center">${folder}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="9" class="empty">ไม่มีข้อมูล</td></tr>';
+  }).join('') || `<tr><td colspan="${colSpan}" class="empty">ไม่มีข้อมูล</td></tr>`;
 }
 
 function filterTechTable(filter, cardEl) {
