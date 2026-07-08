@@ -108,6 +108,11 @@ tr:hover td{background:#f8fafc;}
 .tech-hero-name{font-size:22px;font-weight:800;color:#fff;}
 .tech-hero-sub{font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;}
 .tech-empty{text-align:center;padding:60px;color:var(--muted);font-size:15px;}
+.stat-card.clickable{cursor:pointer;transition:transform .12s,box-shadow .12s,border-color .12s;}
+.stat-card.clickable:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.1);}
+.stat-card.clickable.selected{border-color:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,.25);}
+.tech-filter-badge{display:inline-flex;align-items:center;gap:6px;background:var(--blue-bg);border:1px solid #bfdbfe;color:var(--blue);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;margin-bottom:10px;}
+.tech-filter-badge button{background:none;border:none;cursor:pointer;color:var(--blue);font-size:14px;line-height:1;padding:0 2px;}
 </style>
 </head>
 <body>
@@ -774,37 +779,39 @@ function renderTechView() {
     </div>
 
     <div class="tech-stat-grid">
-      <div class="stat-card">
+      <div class="stat-card clickable" onclick="filterTechTable('all',this)">
         <div class="st-label">งานทั้งหมด</div>
         <div class="st-num" style="color:var(--blue)">${total}</div>
         <div class="st-sub">รายการ</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card clickable" onclick="filterTechTable('งานเสร็จปกติ',this)">
         <div class="st-label">✅ งานเสร็จ</div>
         <div class="st-num" style="color:var(--green)">${finish}</div>
         <div class="st-sub">${pct(finish)}</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card clickable" onclick="filterTechTable('งานเสร็จไม่รับงาน',this)">
         <div class="st-label">⚠️ ไม่รับงาน</div>
         <div class="st-num" style="color:var(--orange)">${installno}</div>
         <div class="st-sub">${pct(installno)}</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card clickable" onclick="filterTechTable('เปลี่ยนคัน',this)">
         <div class="st-label">🔄 เปลี่ยนคัน</div>
         <div class="st-num" style="color:var(--blue)">${swap}</div>
         <div class="st-sub">${pct(swap)}</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card clickable" onclick="filterTechTable('ยกเลิก',this)">
         <div class="st-label">❌ ยกเลิก</div>
         <div class="st-num" style="color:var(--red)">${cancel}</div>
         <div class="st-sub">${pct(cancel)}</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card clickable" onclick="filterTechTable('color',this)">
         <div class="st-label">🎨 สีหลุด</div>
         <div class="st-num" style="color:var(--orange)">${colorN}</div>
         <div class="st-sub">${pct(colorN)}</div>
       </div>
     </div>
+
+    <div id="techFilterBadge"></div>
 
     <div class="chart-grid-2" style="margin-bottom:12px">
       <div class="chart-card">
@@ -819,7 +826,7 @@ function renderTechView() {
 
     <div class="table-card">
       <div class="table-header">
-        <h3>ประวัติงาน — ${tech} (${total} รายการ)</h3>
+        <h3 id="techTableTitle">ประวัติงาน — ${tech} (${total} รายการ)</h3>
       </div>
       <div class="table-wrap">
         <table>
@@ -827,22 +834,7 @@ function renderTechView() {
             <th>#</th><th>วันที่</th><th>ทะเบียน</th><th>อู่</th>
             <th>สินค้า</th><th>Type</th><th>Model</th><th>สถานะ</th><th>📁</th>
           </tr></thead>
-          <tbody>${rows.slice().reverse().map((r,i) => {
-            const badge = STATUS_BADGE[r.status]||'badge-blue';
-            const icon  = STATUS_ICON[r.status]||'';
-            const folder = r.folder ? `<a href="${r.folder}" target="_blank" class="link-folder">📁</a>` : '-';
-            return `<tr>
-              <td style="color:var(--muted);text-align:center">${i+1}</td>
-              <td>${r.date||'-'}</td>
-              <td style="font-weight:700;color:var(--green)">${r.plate||'-'}</td>
-              <td>${r.depot||'-'}</td>
-              <td>${r.product||'-'}</td>
-              <td>${r.wrapType||'-'}</td>
-              <td>${r.modelName||'-'}</td>
-              <td><span class="badge ${badge}">${icon} ${r.status||'-'}</span></td>
-              <td style="text-align:center">${folder}</td>
-            </tr>`;
-          }).join('')}</tbody>
+          <tbody id="techTableBody"></tbody>
         </table>
       </div>
     </div>`;
@@ -877,6 +869,65 @@ function renderTechView() {
     options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
       plugins:{legend:{position:'right',labels:{font:{family:'Sarabun',size:12},boxWidth:12,padding:8}}}}
   });
+
+  // render full table initially
+  renderTechTable(rows, 'all');
+}
+
+let _techAllRows = [];
+function renderTechTable(rows, filter) {
+  _techAllRows = rows;
+  let display = rows.slice().reverse();
+  let label = 'ประวัติงานทั้งหมด';
+  const tech = document.getElementById('techSelect').value;
+
+  if (filter === 'color') {
+    display = display.filter(r => r.colorBack || r.colorLeft || r.colorRight);
+    label = '🎨 รายการสีหลุด';
+  } else if (filter && filter !== 'all') {
+    display = display.filter(r => r.status === filter);
+    const icons = {'งานเสร็จปกติ':'✅','งานเสร็จไม่รับงาน':'⚠️','เปลี่ยนคัน':'🔄','ยกเลิก':'❌'};
+    label = `${icons[filter]||''} ${filter}`;
+  }
+
+  const title = document.getElementById('techTableTitle');
+  const badge = document.getElementById('techFilterBadge');
+  const tbody = document.getElementById('techTableBody');
+  if (!tbody) return;
+
+  if (title) title.textContent = `${label} — ${tech} (${display.length} รายการ)`;
+
+  if (badge) {
+    badge.innerHTML = filter && filter !== 'all'
+      ? `<span class="tech-filter-badge">${label} <button onclick="filterTechTable('all',null)">✕</button></span>`
+      : '';
+  }
+
+  tbody.innerHTML = display.map((r, i) => {
+    const bdg = STATUS_BADGE[r.status]||'badge-blue';
+    const ico = STATUS_ICON[r.status]||'';
+    const color = (r.colorBack||r.colorLeft||r.colorRight) ? ' style="background:#fffbeb"' : '';
+    const colorDot = (r.colorBack||r.colorLeft||r.colorRight) ? ' 🎨' : '';
+    const folder = r.folder ? `<a href="${r.folder}" target="_blank" class="link-folder">📁</a>` : '-';
+    return `<tr${color}>
+      <td style="color:var(--muted);text-align:center">${i+1}</td>
+      <td>${r.date||'-'}</td>
+      <td style="font-weight:700;color:var(--green)">${r.plate||'-'}${colorDot}</td>
+      <td>${r.depot||'-'}</td>
+      <td>${r.product||'-'}</td>
+      <td>${r.wrapType||'-'}</td>
+      <td>${r.modelName||'-'}</td>
+      <td><span class="badge ${bdg}">${ico} ${r.status||'-'}</span></td>
+      <td style="text-align:center">${folder}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="9" class="empty">ไม่มีข้อมูล</td></tr>';
+}
+
+function filterTechTable(filter, cardEl) {
+  document.querySelectorAll('.tech-stat-grid .stat-card').forEach(c => c.classList.remove('selected'));
+  if (cardEl && filter !== 'all') cardEl.classList.add('selected');
+  renderTechTable(_techAllRows, filter);
+  document.getElementById('techTableBody').closest('.table-card').scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 
 setDefaultDates();
