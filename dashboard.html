@@ -113,9 +113,60 @@ tr:hover td{background:#f8fafc;}
 .stat-card.clickable.selected{border-color:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,.25);}
 .tech-filter-badge{display:inline-flex;align-items:center;gap:6px;background:var(--blue-bg);border:1px solid #bfdbfe;color:var(--blue);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;margin-bottom:10px;}
 .tech-filter-badge button{background:none;border:none;cursor:pointer;color:var(--blue);font-size:14px;line-height:1;padding:0 2px;}
+.btn-pdf{background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.4);color:#fca5a5;border-radius:6px;padding:6px 12px;font-size:12px;font-family:'Sarabun',sans-serif;cursor:pointer;display:flex;align-items:center;gap:4px;}
+.btn-pdf:hover{background:rgba(220,38,38,0.25);}
+
+@media print {
+  /* ซ่อนส่วนที่ไม่จำเป็น */
+  .topbar,.filterbar,.tabbar,.statusbar,.tech-filterbar,
+  .btn-refresh,.btn-export,.btn-pdf,.export-group,
+  #tab-tech,.search-input,#ovFilterBadge,
+  .link-folder{display:none!important;}
+
+  /* reset background */
+  body{background:#fff!important;font-size:11px;}
+  .main{padding:0!important;max-width:100%!important;}
+
+  /* header แทน topbar */
+  #print-header{display:block!important;}
+
+  /* stat cards */
+  .stat-grid{grid-template-columns:repeat(5,1fr)!important;gap:6px!important;}
+  .stat-card{border:1px solid #ccc!important;padding:8px 10px!important;break-inside:avoid;}
+  .stat-card .st-num{font-size:22px!important;}
+
+  /* charts — ให้พอดี 2 คอลัมน์ */
+  .chart-grid{grid-template-columns:1fr 1fr 1fr!important;gap:8px!important;}
+  .chart-grid-2{grid-template-columns:1fr 1fr!important;gap:8px!important;}
+  .chart-wrap{height:140px!important;}
+  .chart-wrap-bar{height:140px!important;}
+  .chart-wrap-horiz{height:110px!important;}
+  .chart-card{break-inside:avoid;border:1px solid #ccc!important;}
+
+  /* ซ่อน tech history tab */
+  #view-tech{display:none!important;}
+
+  /* table */
+  .table-wrap{overflow:visible!important;}
+  table{font-size:10px!important;}
+  th,td{padding:5px 6px!important;}
+  tr{break-inside:avoid;}
+  .table-card{border:1px solid #ccc!important;}
+
+  /* page setup */
+  @page{size:A4 landscape;margin:12mm 10mm;}
+}
+#print-header{display:none;margin-bottom:12px;border-bottom:2px solid #1e293b;padding-bottom:8px;}
+#print-header h2{font-size:16px;font-weight:800;color:#1e293b;}
+#print-header p{font-size:11px;color:#64748b;}
 </style>
 </head>
 <body>
+
+<div id="print-header">
+  <h2>📊 รายงานสถานะการติดตั้ง — Bus Media Report</h2>
+  <p id="print-subtitle">Plan B Media — Bus Wrap Advertisement Schedule</p>
+</div>
 
 <div class="topbar">
   <div class="topbar-logo">PB</div>
@@ -129,6 +180,7 @@ tr:hover td{background:#f8fafc;}
     <div class="export-group">
       <button class="btn-export" onclick="exportCSV()">⬇ CSV</button>
       <button class="btn-export" onclick="exportExcel()">⬇ Excel</button>
+      <button class="btn-pdf" onclick="exportPDF()">🖨 PDF</button>
     </div>
   </div>
 </div>
@@ -731,6 +783,15 @@ function getRowCols(r, i) {
     r.swapPlate||'', r.swapReason||'', r.swapNote||'', r.cancelReason||'',
     r.note||'', r.photos||0, r.folder||''
   ];
+}
+
+function exportPDF() {
+  // อัปเดต subtitle ให้มีวันที่และ filter ปัจจุบัน
+  const updated = document.getElementById('updatedAt').textContent;
+  const rows    = getFilteredRows();
+  document.getElementById('print-subtitle').textContent =
+    `Plan B Media — อัปเดต: ${updated} — ${rows.length} รายการ`;
+  window.print();
 }
 
 function exportCSV() {
