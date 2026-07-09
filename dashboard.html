@@ -737,7 +737,7 @@ function loadAndRender() {
     .then(r => r.json())
     .then(d => {
       document.getElementById('refreshBtn').textContent = '↻ รีเฟรช';
-      if (d.status !== 'ok') { document.getElementById('mainContent').innerHTML = '<p class="error-msg">เกิดข้อผิดพลาด — กรุณา Deploy Code.gs ใหม่</p>'; return; }
+      if (d.status !== 'ok') { document.getElementById('mainContent').innerHTML = '<p class="error-msg">เกิดข้อผิดพลาด: ' + (d.message||d.status) + '</p>'; return; }
       document.getElementById('updatedAt').textContent = d.updatedAt || '';
       allRows = d.rows || [];
       populateDepotFilter(allRows);
