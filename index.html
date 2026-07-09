@@ -984,9 +984,9 @@ document.getElementById('plate').addEventListener('input', updatePath);
 updatePath();
 
 // ── Compress ──────────────────────────────────────────────────
-function compressImage(file, maxW = 800, quality = 0.60) {
+function compressImage(file, maxW = 1024, quality = 0.70) {
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('บีบอัดรูปช้าเกินไป ลองใหม่อีกครั้ง')), 15000);
+    const timer = setTimeout(() => reject(new Error('บีบอัดรูปช้าเกินไป ลองใหม่อีกครั้ง')), 30000);
     const img = new Image();
     img.onload = () => {
       clearTimeout(timer);
