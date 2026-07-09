@@ -810,6 +810,7 @@ select.hidden-select { display: none; }
 // ============================================================
 const LIFF_ID    = '2010157654-04IFsZOC';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbywws1pzwSLrgOgXvVWElTbBtIUryTbQXzqTfCUoVF6Olk-chHMSgtvbMQxjBesU8T-/exec';
+const API_SECRET = 'PlanB@Bus2025!';
 // ============================================================
 
 const MAX_PHOTOS  = 40;
@@ -1317,7 +1318,7 @@ function openHistory() {
     return;
   }
   body.innerHTML = '<p style="text-align:center;color:#9b9a97;font-size:14px;padding:20px">กำลังโหลด...</p>';
-  fetch(SCRIPT_URL + '?action=history&name=' + encodeURIComponent(name), { redirect: 'follow' })
+  fetch(SCRIPT_URL + '?action=history&name=' + encodeURIComponent(name) + '&secret=' + API_SECRET, { redirect: 'follow' })
     .then(r => r.json())
     .then(d => renderHistory(d, name))
     .catch(() => { body.innerHTML = '<p style="text-align:center;color:#e03e3e;font-size:14px;padding:20px">โหลดไม่ได้ ลองใหม่อีกครั้ง</p>'; });

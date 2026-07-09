@@ -275,6 +275,7 @@ tr:hover td{background:#f8fafc;}
 
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbywws1pzwSLrgOgXvVWElTbBtIUryTbQXzqTfCUoVF6Olk-chHMSgtvbMQxjBesU8T-/exec';
+const API_SECRET = 'PlanB@Bus2025!';
 let allRows = [];
 let charts  = {};
 let currentPeriod = 'today';
@@ -732,7 +733,7 @@ function setDefaultDates() {
 function loadAndRender() {
   document.getElementById('refreshBtn').textContent = '↻ กำลังโหลด...';
   document.getElementById('statusBar').textContent  = 'กำลังโหลดข้อมูล...';
-  fetch(SCRIPT_URL + '?action=dashboard', { redirect: 'follow' })
+  fetch(SCRIPT_URL + '?action=dashboard&secret=' + API_SECRET, { redirect: 'follow' })
     .then(r => r.json())
     .then(d => {
       document.getElementById('refreshBtn').textContent = '↻ รีเฟรช';
