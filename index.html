@@ -862,15 +862,25 @@ function toggleChip(el, group) {
 }
 
 // ── [FIX] LIFF init + enforce LINE client ─────────────────────
+// โหมด Admin: เปิดจากเบราว์เซอร์ได้ ถ้า URL มี ?admin=<API_SECRET>
+const isAdminMode = new URLSearchParams(location.search).get('admin') === API_SECRET;
 try {
   if (typeof liff !== 'undefined') {
     liff.init({ liffId: LIFF_ID })
       .then(() => {
-        if (!liff.isInClient()) {
+        if (!liff.isInClient() && !isAdminMode) {
           document.getElementById('lineWarnBanner').style.display = 'flex';
           const btn = document.getElementById('submitBtn');
           btn.disabled = true;
           btn.innerHTML = '<i class="ti ti-brand-line"></i> กรุณาเปิดผ่าน LINE';
+        }
+        if (isAdminMode && !liff.isInClient()) {
+          const banner = document.getElementById('lineWarnBanner');
+          banner.style.display = 'flex';
+          banner.style.background = '#ecfdf5';
+          banner.style.borderColor = '#6ee7b7';
+          banner.style.color = '#065f46';
+          banner.innerHTML = '<i class="ti ti-shield-check"></i><span>โหมด Admin — ส่งรายงานจากเบราว์เซอร์ได้</span>';
         }
       })
       .catch(err => console.warn('LIFF init:', err));
