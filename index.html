@@ -1071,6 +1071,22 @@ async function handleSubmit() {
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
 
+  // เช็คงานซ้ำ: ทะเบียนเดียวกัน + วันนี้
+  showLoading(true, 'กำลังตรวจสอบข้อมูล...');
+  try {
+    const dupRes = await fetch(SCRIPT_URL + '?action=checkdup&plate=' + encodeURIComponent(plate) + '&secret=' + API_SECRET, { redirect: 'follow' });
+    const dup    = await dupRes.json();
+    if (dup.duplicate) {
+      showLoading(false);
+      const ok = confirm(`⚠️ ทะเบียน ${plate} มีรายงานวันนี้แล้ว ${dup.count} ครั้ง\nโดย: ${dup.tech} เวลา ${dup.time} น. (${dup.jobStatus})\n\nต้องการส่งซ้ำอีกครั้งหรือไม่?`);
+      if (!ok) {
+        isSubmitting = false;
+        btn.disabled = false;
+        return;
+      }
+    }
+  } catch(e) { /* เช็คไม่ได้ก็ให้ส่งต่อไปตามปกติ */ }
+
   showLoading(true, 'กำลังบีบอัดรูปภาพ...');
   const photos = await Promise.all(photoFiles.map(f => compressImage(f)));
 
