@@ -525,7 +525,20 @@ select.hidden-select { display: none; }
       <div class="card-row-icon"><i class="ti ti-user"></i></div>
       <div class="card-row-body">
         <div class="card-row-label">ชื่อ <span class="req">*</span></div>
-        <input type="text" id="techName" placeholder="ชื่อ-นามสกุล หรือชื่อทีม" maxlength="60" autocomplete="off">
+        <select id="techName" style="width:100%;border:none;background:transparent;font-size:15px;font-family:'Sarabun',sans-serif;color:inherit;padding:2px 0;outline:none;-webkit-appearance:none">
+          <option value="">— เลือกชื่อช่าง / ทีม —</option>
+          <option>ช่างนนท์</option>
+          <option>ช่างเจน</option>
+          <option>ช่างจอร์ด</option>
+          <option>ช่างเหน่ง</option>
+          <option>ช่างเพียว</option>
+          <option>ช่างนิว</option>
+          <option>ช่างณุ</option>
+          <option>ช่างกอล์ฟ</option>
+          <option>ช่างต้อม</option>
+          <option>ทีม Hello</option>
+          <option>ทีม PB</option>
+        </select>
       </div>
     </div>
 
@@ -573,7 +586,8 @@ select.hidden-select { display: none; }
       <div class="card-row-icon"><i class="ti ti-tag"></i></div>
       <div class="card-row-body">
         <div class="card-row-label">ชื่อสินค้า <span class="req">*</span></div>
-        <input type="text" id="product" placeholder="เช่น Coca-Cola, Central Pattana" maxlength="80" autocomplete="off">
+        <input type="text" id="product" placeholder="พิมพ์เพื่อค้นหาสินค้าที่เคยกรอก..." maxlength="80" autocomplete="off" list="productList">
+        <datalist id="productList"></datalist>
       </div>
     </div>
 
@@ -602,6 +616,9 @@ select.hidden-select { display: none; }
           <div class="chip" onclick="toggleChip(this,'wrapType')">HW+IB</div>
           <div class="chip" onclick="toggleChip(this,'wrapType')">FW+IB</div>
           <div class="chip" onclick="toggleChip(this,'wrapType')">IB</div>
+          <div class="chip" onclick="toggleChip(this,'wrapType')">StickerWrap</div>
+          <div class="chip" onclick="toggleChip(this,'wrapType')">Sticker Wrap+Lightbox</div>
+          <div class="chip" onclick="toggleChip(this,'wrapType')">Sticker Wrap+Lightbox+Roof</div>
         </div>
       </div>
     </div>
@@ -619,6 +636,11 @@ select.hidden-select { display: none; }
           <div class="chip" onclick="toggleChip(this,'modelName')">Hino44</div>
           <div class="chip" onclick="toggleChip(this,'modelName')">Hino45</div>
           <div class="chip" onclick="toggleChip(this,'modelName')">Daewoo67</div>
+          <div class="chip" onclick="toggleChip(this,'modelName')">Nex1</div>
+          <div class="chip" onclick="toggleChip(this,'modelName')">Nex2</div>
+          <div class="chip" onclick="toggleChip(this,'modelName')">BENZ</div>
+          <div class="chip" onclick="toggleChip(this,'modelName')">SUNLONG</div>
+          <div class="chip" onclick="toggleChip(this,'modelName')">ZHONGTONG</div>
         </div>
       </div>
     </div>
@@ -860,6 +882,17 @@ function toggleChip(el, group) {
   if (group === 'wrapType')  selectedWrapType  = el.textContent;
   if (group === 'modelName') selectedModelName = el.textContent;
 }
+
+// ── โหลดรายชื่อสินค้าที่เคยกรอก มาเป็น autocomplete ───────────
+fetch(SCRIPT_URL + '?action=products&secret=' + API_SECRET, { redirect: 'follow' })
+  .then(r => r.json())
+  .then(d => {
+    if (d.status === 'ok' && d.products && d.products.length) {
+      document.getElementById('productList').innerHTML =
+        d.products.map(p => `<option value="${p.replace(/"/g,'&quot;')}">`).join('');
+    }
+  })
+  .catch(() => {});
 
 // ── [FIX] LIFF init + enforce LINE client ─────────────────────
 // โหมด Admin: เปิดจากเบราว์เซอร์ได้ ถ้า URL มี ?admin=<API_SECRET>
