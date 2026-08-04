@@ -1133,7 +1133,11 @@ async function handleSubmit() {
   showLoading(true, 'กำลังบีบอัดรูปภาพ...');
   const photos = await Promise.all(photoFiles.map(f => compressImage(f)));
 
+  // [FIX] submissionId คงที่ตลอดการส่ง/retry ทั้งหมดของงานนี้ ป้องกันบันทึกซ้ำถ้า retry
+  const submissionId = getBangkokTimestamp() + '_' + plate.replace(/\W/g,'') + '_' + Math.random().toString(36).slice(2, 8);
+
   const basePayload = {
+    submissionId,
     techName,
     depot, plate, route, busnum, product, mediatype,
     wrapType: selectedWrapType,
