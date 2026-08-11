@@ -454,6 +454,67 @@ select.hidden-select { display: none; }
   </div>
 </div>
 
+<!-- Modal: ตรวจสอบ/แก้ไขข้อมูลย้อนหลัง (Admin เท่านั้น) -->
+<div class="modal-picker-overlay" id="auditOverlay">
+  <div class="modal-picker-sheet" style="max-height:90vh">
+    <div class="modal-picker-handle"></div>
+    <div class="modal-picker-header">
+      <h3>🔍 ตรวจสอบ/แก้ไขข้อมูลย้อนหลัง</h3>
+      <button class="modal-picker-close" onclick="closeAudit()">✕</button>
+    </div>
+    <div style="padding:10px 14px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid #eee">
+      <input type="text" id="auditQ" placeholder="🔍 ค้นหา ทะเบียน / สายรถ / สินค้า / ช่าง / อู่..." style="width:100%;padding:10px 12px;border:1px solid #e2e2e2;border-radius:8px;font-size:14px;font-family:'Sarabun',sans-serif" oninput="auditSearchDebounced()">
+      <div style="display:flex;gap:8px">
+        <input type="date" id="auditFrom" style="flex:1;padding:8px 10px;border:1px solid #e2e2e2;border-radius:8px;font-size:13px;font-family:'Sarabun',sans-serif" onchange="auditSearch()">
+        <input type="date" id="auditTo" style="flex:1;padding:8px 10px;border:1px solid #e2e2e2;border-radius:8px;font-size:13px;font-family:'Sarabun',sans-serif" onchange="auditSearch()">
+      </div>
+    </div>
+    <div id="auditBody" style="overflow-y:auto;flex:1;padding:12px 14px 20px">
+      <p style="text-align:center;color:#9b9a97;font-size:14px;padding:20px">พิมพ์คำค้นหา หรือเลือกช่วงวันที่ เพื่อค้นหารายการ</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: แก้ไขรายการ -->
+<div class="modal-picker-overlay" id="auditEditOverlay">
+  <div class="modal-picker-sheet">
+    <div class="modal-picker-handle"></div>
+    <div class="modal-picker-header">
+      <h3>แก้ไขรายการ</h3>
+      <button class="modal-picker-close" onclick="closeAuditEdit()">✕</button>
+    </div>
+    <div style="padding:14px;display:flex;flex-direction:column;gap:12px;overflow-y:auto">
+      <div>
+        <label style="font-size:12px;color:#787774;font-weight:600">ชื่อช่าง/ทีม</label>
+        <input type="text" id="editTechName" style="width:100%;padding:9px 11px;border:1px solid #e2e2e2;border-radius:8px;font-size:14px;font-family:'Sarabun',sans-serif;margin-top:4px">
+      </div>
+      <div>
+        <label style="font-size:12px;color:#787774;font-weight:600">อู่</label>
+        <input type="text" id="editDepot" style="width:100%;padding:9px 11px;border:1px solid #e2e2e2;border-radius:8px;font-size:14px;font-family:'Sarabun',sans-serif;margin-top:4px">
+      </div>
+      <div>
+        <label style="font-size:12px;color:#787774;font-weight:600">ทะเบียนรถ</label>
+        <input type="text" id="editPlate" style="width:100%;padding:9px 11px;border:1px solid #e2e2e2;border-radius:8px;font-size:14px;font-family:'Sarabun',sans-serif;margin-top:4px">
+      </div>
+      <div style="display:flex;gap:10px">
+        <div style="flex:1">
+          <label style="font-size:12px;color:#787774;font-weight:600">สายรถ</label>
+          <input type="text" id="editRoute" style="width:100%;padding:9px 11px;border:1px solid #e2e2e2;border-radius:8px;font-size:14px;font-family:'Sarabun',sans-serif;margin-top:4px">
+        </div>
+        <div style="flex:1">
+          <label style="font-size:12px;color:#787774;font-weight:600">หมายเลขรถ</label>
+          <input type="text" id="editBusnum" style="width:100%;padding:9px 11px;border:1px solid #e2e2e2;border-radius:8px;font-size:14px;font-family:'Sarabun',sans-serif;margin-top:4px">
+        </div>
+      </div>
+      <div>
+        <label style="font-size:12px;color:#787774;font-weight:600">ชื่อสินค้า</label>
+        <input type="text" id="editProduct" style="width:100%;padding:9px 11px;border:1px solid #e2e2e2;border-radius:8px;font-size:14px;font-family:'Sarabun',sans-serif;margin-top:4px">
+      </div>
+      <button onclick="saveAuditEdit()" id="auditSaveBtn" style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:700;font-family:'Sarabun',sans-serif;cursor:pointer;margin-top:6px">💾 บันทึกการแก้ไข</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: อู่ -->
 <div class="modal-picker-overlay" id="depotPickerOverlay">
   <div class="modal-picker-sheet">
@@ -489,6 +550,7 @@ select.hidden-select { display: none; }
       <p>Street-Bus Division · Plan B Media</p>
     </div>
     <button onclick="openHistory()" style="margin-left:auto;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;font-family:'Sarabun',sans-serif;cursor:pointer;flex-shrink:0;display:flex;align-items:center;gap:5px;"><i class="ti ti-history" style="font-size:15px"></i>ประวัติงาน</button>
+    <button onclick="openAudit()" id="auditBtn" style="display:none;background:rgba(245,158,11,0.18);border:1px solid rgba(245,158,11,0.4);color:#fde68a;border-radius:8px;padding:7px 12px;font-size:12px;font-family:'Sarabun',sans-serif;cursor:pointer;flex-shrink:0;align-items:center;gap:5px;"><i class="ti ti-search" style="font-size:15px"></i>ตรวจสอบย้อนหลัง</button>
   </div>
 
   <!-- LINE Warning Banner (แสดงเมื่อเปิดนอก LINE) -->
@@ -897,6 +959,7 @@ fetch(SCRIPT_URL + '?action=products&secret=' + API_SECRET, { redirect: 'follow'
 // ── [FIX] LIFF init + enforce LINE client ─────────────────────
 // โหมด Admin: เปิดจากเบราว์เซอร์ได้ ถ้า URL มี ?admin=<API_SECRET>
 const isAdminMode = new URLSearchParams(location.search).get('admin') === API_SECRET;
+if (isAdminMode) document.getElementById('auditBtn').style.display = 'flex';
 try {
   if (typeof liff !== 'undefined') {
     liff.init({ liffId: LIFF_ID })
@@ -1388,6 +1451,106 @@ function openHistory() {
 }
 function closeHistory() {
   document.getElementById('historyOverlay').classList.remove('open');
+}
+
+// ── ตรวจสอบ/แก้ไขข้อมูลย้อนหลัง (Admin เท่านั้น) ───────────────
+let _auditSearchTimer = null;
+let _auditResults = [];
+
+function openAudit() {
+  document.getElementById('auditOverlay').classList.add('open');
+}
+function closeAudit() {
+  document.getElementById('auditOverlay').classList.remove('open');
+}
+function auditSearchDebounced() {
+  clearTimeout(_auditSearchTimer);
+  _auditSearchTimer = setTimeout(auditSearch, 400);
+}
+function auditSearch() {
+  const q    = document.getElementById('auditQ').value.trim();
+  const from = document.getElementById('auditFrom').value;
+  const to   = document.getElementById('auditTo').value;
+  const body = document.getElementById('auditBody');
+
+  if (!q && !from && !to) {
+    body.innerHTML = '<p style="text-align:center;color:#9b9a97;font-size:14px;padding:20px">พิมพ์คำค้นหา หรือเลือกช่วงวันที่ เพื่อค้นหารายการ</p>';
+    return;
+  }
+
+  body.innerHTML = '<p style="text-align:center;color:#9b9a97;font-size:14px;padding:20px">กำลังค้นหา...</p>';
+  const params = new URLSearchParams({ action: 'search', q, dateFrom: from, dateTo: to, secret: API_SECRET });
+  fetch(SCRIPT_URL + '?' + params.toString(), { redirect: 'follow' })
+    .then(r => r.json())
+    .then(d => renderAuditResults(d))
+    .catch(() => { body.innerHTML = '<p style="text-align:center;color:#e03e3e;font-size:14px;padding:20px">ค้นหาไม่ได้ ลองใหม่อีกครั้ง</p>'; });
+}
+function renderAuditResults(d) {
+  const body = document.getElementById('auditBody');
+  if (!d || d.status !== 'ok') { body.innerHTML = '<p style="text-align:center;color:#e03e3e;font-size:14px;padding:20px">เกิดข้อผิดพลาด</p>'; return; }
+  _auditResults = d.results || [];
+  if (!_auditResults.length) {
+    body.innerHTML = '<p style="text-align:center;color:#9b9a97;font-size:14px;padding:20px">ไม่พบรายการ</p>';
+    return;
+  }
+  const countNote = d.total > _auditResults.length ? ` (แสดง ${_auditResults.length} จากทั้งหมด ${d.total} — ค้นแคบลงเพื่อดูครบ)` : '';
+  body.innerHTML =
+    `<p style="font-size:12px;color:#9b9a97;margin-bottom:8px">พบ ${_auditResults.length} รายการ${countNote}</p>` +
+    _auditResults.map((r, i) => `
+      <div style="border:1px solid #eee;border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer" onclick="openAuditEdit(${i})">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-weight:700;font-size:14px">${r.plate || '-'}</span>
+          <span style="font-size:11px;color:#9b9a97">${r.date || '-'}</span>
+        </div>
+        <div style="font-size:12px;color:#787774;margin-top:2px">${r.techName || '-'} · ${r.depot || '-'} · สาย ${r.route || '-'} รถ ${r.busnum || '-'}</div>
+        <div style="font-size:12px;color:#787774">${r.product || '-'} · ${r.status || '-'}</div>
+      </div>`).join('');
+}
+function openAuditEdit(idx) {
+  const r = _auditResults[idx];
+  if (!r) return;
+  document.getElementById('editTechName').value = r.techName || '';
+  document.getElementById('editDepot').value    = r.depot || '';
+  document.getElementById('editPlate').value    = r.plate || '';
+  document.getElementById('editRoute').value    = r.route || '';
+  document.getElementById('editBusnum').value   = r.busnum || '';
+  document.getElementById('editProduct').value  = r.product || '';
+  document.getElementById('auditSaveBtn').dataset.rowIndex = r.rowIndex;
+  document.getElementById('auditEditOverlay').classList.add('open');
+}
+function closeAuditEdit() {
+  document.getElementById('auditEditOverlay').classList.remove('open');
+}
+async function saveAuditEdit() {
+  const btn = document.getElementById('auditSaveBtn');
+  const rowIndex = btn.dataset.rowIndex;
+  const fields = {
+    techName: document.getElementById('editTechName').value.trim(),
+    depot:    document.getElementById('editDepot').value.trim(),
+    plate:    document.getElementById('editPlate').value.trim(),
+    route:    document.getElementById('editRoute').value.trim(),
+    busnum:   document.getElementById('editBusnum').value.trim(),
+    product:  document.getElementById('editProduct').value.trim()
+  };
+  btn.disabled = true;
+  btn.textContent = 'กำลังบันทึก...';
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST', redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'updateRecord', secret: API_SECRET, rowIndex, fields })
+    });
+    const json = await res.json();
+    if (json.status !== 'ok') throw new Error(json.message || 'บันทึกไม่สำเร็จ');
+    showToast('บันทึกการแก้ไขสำเร็จ');
+    closeAuditEdit();
+    auditSearch(); // รีเฟรชผลค้นหาให้เห็นค่าที่แก้ล่าสุด
+  } catch(err) {
+    showToast(err.message || 'บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง', true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 บันทึกการแก้ไข';
+  }
 }
 function renderHistory(d, name) {
   const body = document.getElementById('historyBody');
