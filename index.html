@@ -220,11 +220,11 @@
       <div class="pills" id="statusPills"></div>
     </div>
     <div class="card hide" id="condCard"></div>
-    <div class="card">
+    <div class="card" id="wrapCard">
       <h2>Type of wrap <span class="req">*</span></h2>
       <div class="pills" id="wrapPills"></div>
     </div>
-    <div class="card">
+    <div class="card" id="modelCard">
       <h2>Model name <span class="req">*</span></h2>
       <div class="pills" id="modelPills"></div>
     </div>
@@ -455,6 +455,8 @@ function fillCar(box, j) {
   var tags = el('div', 'tags');
   if (j.media) tags.appendChild(el('span', 'tag media', j.media));
   if (j.product) tags.appendChild(el('span', 'tag', j.product));
+  if (j.wrapType) tags.appendChild(el('span', 'tag', canon(j.wrapType, WRAPS)));
+  if (j.modelName) tags.appendChild(el('span', 'tag', canon(j.modelName, MODELS)));
   tags.appendChild(el('span', 'tag', labelOf(JOBTYPES, j.jobtype)));
   var miss = missingOf(j);
   if (miss.length) tags.appendChild(el('span', 'tag bad', 'ต้องกรอก: ' + miss.join(', ')));
@@ -543,7 +545,7 @@ function blankState(j) {
 function openForm(j) {
   if (busy) return;
   cur = { offlist: false, row: j.row, plate: j.plate, route: j.route, no: j.no, depot: canon(j.depot, DEPOTS), product: j.product, media: j.media, jobtype: j.jobtype || 'install',
-          deadline: j.deadline, days: j.days, remark: j.remark, sid: null };
+          wrapType: j.wrapType, modelName: j.modelName, deadline: j.deadline, days: j.days, remark: j.remark, sid: null };
   startForm(j);
 }
 function openOffList() {
@@ -557,6 +559,7 @@ function startForm(j) {
   setMsg(''); dropPhotos(true);
   renderIdentity(); renderStatusPills(); renderCond(); renderPills('wrapPills', WRAPS, 'wrap'); renderPills('modelPills', MODELS, 'model');
   renderPills('peelPills', [['yes', 'มีลอก'], ['no', 'ไม่มีลอก']], 'peel');
+  $('wrapCard').className = fs.wrap ? 'card hide' : 'card'; $('modelCard').className = fs.model ? 'card hide' : 'card';
   renderSides('paint'); renderSides('rust'); renderLic(); updatePhotoReq();
   fillSelect($('by'), users, fs.by);
   applyLineGate();
