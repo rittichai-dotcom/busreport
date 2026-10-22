@@ -426,7 +426,9 @@ function show(view) {
 // ============================================================
 // งานค้าง
 // ============================================================
-function isFuture(j) { return j.days !== null && j.days > 0; }
+var SHOW_FROM_HOUR = 12; // งานของวันที่ Deadline จะโผล่ในรายการตั้งแต่เวลานี้ (เวลาไทย)
+function bkkHour() { return parseInt(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Bangkok', hour: '2-digit', hour12: false }).format(new Date()), 10) % 24; }
+function isFuture(j) { return j.days !== null && (j.days > 0 || (j.days === 0 && bkkHour() < SHOW_FROM_HOUR)); }
 function urgency(j) { return j.days === null ? 'none' : (j.days < 0 ? 'bad' : 'ok'); }
 function dueText(j) {
   if (!j.deadline) return 'ไม่ระบุ Deadline';
@@ -1073,6 +1075,8 @@ apiGet({ action: 'products' }).then(function (d) {
   var dl = $('productList'); (d.products || []).slice(0, 400).forEach(function (p) { var o = document.createElement('option'); o.value = p; dl.appendChild(o); });
 }).catch(function () {});
 
+// ถึงเวลาโผล่งานของวันนี้ (12:00) โดยไม่ต้องรีเฟรช
+setInterval(function () { if (!busy && currentView() === 'list' && jobs.length) { renderStats(); renderList(); } }, 60000);
 renderPhotos();
 load();
 </script>
