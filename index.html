@@ -1,1676 +1,1068 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Posting & Demolish — Plan B Media</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
-:root {
-  --bg: #f0f2f5;
-  --surface: #ffffff;
-  --border: #e4e6ea;
-  --border-hover: #c4c6ca;
-  --text: #1a1a2e;
-  --muted: #9b9a97;
-  --muted2: #6b7280;
-  --accent: #1d4ed8;
-  --accent-bg: #eff6ff;
-  --accent-dark: #1e40af;
-  --green: #059669;
-  --green-bg: #ecfdf5;
-  --green-border: #6ee7b7;
-  --blue: #0284c7;
-  --blue-bg: #e0f2fe;
-  --blue-border: #7dd3fc;
-  --red: #dc2626;
-  --red-bg: #fef2f2;
-  --red-border: #fca5a5;
-  --orange: #d97706;
-  --orange-bg: #fffbeb;
-  --purple: #7c3aed;
-  --purple-bg: #f5f3ff;
-  --radius: 12px;
-  --radius-sm: 8px;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
-  --shadow: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'Sarabun', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-}
-.page { max-width: 480px; margin: 0 auto; padding: 16px 14px 48px; }
+  :root {
+    --bg:#f3f5f9; --card:#ffffff; --ink:#0f1b2d; --muted:#6b7686; --line:#e3e8ef;
+    --brand:#1d4ed8; --brand-ink:#ffffff; --brand-soft:#e8efff; --navy:#13294b;
+    --ok:#15803d; --ok-soft:#e7f6ec; --warn:#b45309; --warn-soft:#fff4e0; --bad:#b91c1c; --bad-soft:#fdecec;
+    --radius:14px; --shadow:0 1px 2px rgba(15,27,45,.06), 0 4px 14px rgba(15,27,45,.06);
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { margin:0; background:var(--bg); color:var(--ink); }
+  body { font-family:"Noto Sans Thai", Tahoma, system-ui, sans-serif; font-size:15px; line-height:1.45; }
+  button, input, select, textarea { font:inherit; color:inherit; }
+  .hide { display:none !important; }
+  .wrap { max-width:720px; margin:0 auto; padding:0 14px; }
 
-/* ── Header ── */
-.header {
-  display: flex; align-items: center; gap: 14px;
-  padding: 20px 18px; margin-bottom: 20px;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  border-radius: var(--radius);
-  box-shadow: 0 8px 24px rgba(15,52,96,0.3);
-  position: relative; overflow: hidden;
-}
-.header::before {
-  content: ''; position: absolute; top: -20px; right: -20px;
-  width: 100px; height: 100px; border-radius: 50%;
-  background: rgba(255,255,255,0.05);
-  pointer-events: none;
-}
-.header::after {
-  content: ''; position: absolute; bottom: -30px; right: 40px;
-  width: 80px; height: 80px; border-radius: 50%;
-  background: rgba(255,255,255,0.03);
-  pointer-events: none;
-}
-.logo {
-  width: 46px; height: 46px; border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 800; letter-spacing: -0.5px; flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(59,130,246,0.5);
-}
-.header-info h1 { font-size: 16px; font-weight: 700; color: #fff; }
-.header-info p  { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+  /* ---------- ส่วนหัว ---------- */
+  .appbar { position:sticky; top:0; z-index:20; background:linear-gradient(135deg,var(--navy),#1e3f73); color:#fff; padding:14px 0 12px; box-shadow:0 2px 10px rgba(0,0,0,.12); }
+  .appbar .row { display:flex; align-items:center; gap:10px; }
+  .appbar h1 { font-size:18px; margin:0; font-weight:700; letter-spacing:.2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .appbar .sub { font-size:12px; opacity:.8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .appbar .grow { flex:1; min-width:0; }
+  .iconbtn { position:relative; z-index:1; width:38px; height:38px; border-radius:12px; border:none; background:rgba(255,255,255,.14); color:#fff; display:grid; place-items:center; cursor:pointer; flex:none; }
+  .iconbtn svg { width:20px; height:20px; }
+  .iconbtn.admin { background:rgba(245,158,11,.28); color:#fde68a; }
+  .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
+  .stat { background:rgba(255,255,255,.12); border-radius:12px; padding:8px 10px; }
+  .stat b { display:block; font-size:20px; line-height:1.2; }
+  .stat span { font-size:12px; opacity:.85; }
+  .stat.bad b { color:#ffb4b4; } .stat.warn b { color:#ffd58a; }
 
-/* ── Section label ── */
-.section-label {
-  font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--muted2);
-  margin: 22px 0 8px 4px;
-  display: flex; align-items: center; gap: 6px;
-}
-.section-label::before {
-  content: ''; width: 3px; height: 12px;
-  background: var(--accent); border-radius: 2px;
-}
-.section-label:first-child { margin-top: 0; }
+  main { padding:12px 0 96px; }
+  .banner { display:flex; gap:10px; align-items:flex-start; background:var(--warn-soft); border:1px solid #f3d9a6; color:var(--warn); border-radius:12px; padding:10px 12px; font-size:13px; margin-bottom:10px; }
+  .banner.ok { background:var(--ok-soft); border-color:#b7e1c4; color:var(--ok); }
 
-/* ── Card ── */
-.card {
-  background: var(--surface); border-radius: var(--radius);
-  border: 1px solid var(--border); overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  margin-bottom: 10px;
-}
-.card-row {
-  display: flex; align-items: center; gap: 12px;
-  padding: 13px 16px; border-bottom: 1px solid var(--border);
-  transition: background 0.1s;
-}
-.card-row:last-child { border-bottom: none; }
-.card-row-icon {
-  width: 34px; height: 34px; border-radius: var(--radius-sm);
-  background: var(--accent-bg); border: 1px solid #bfdbfe;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; color: var(--accent);
-}
-.card-row-icon i { font-size: 16px; }
-.card-row-body { flex: 1; min-width: 0; }
-.card-row-label { font-size: 11px; color: var(--muted); font-weight: 600; margin-bottom: 3px; }
-.card-row-label .req { color: #e03e3e; }
+  /* ---------- ตัวกรอง ---------- */
+  .search { position:relative; margin-bottom:10px; }
+  .search svg { position:absolute; left:12px; top:50%; transform:translateY(-50%); width:18px; height:18px; color:var(--muted); pointer-events:none; }
+  .search input { width:100%; padding:12px 12px 12px 40px; border:1px solid var(--line); border-radius:12px; background:var(--card); box-shadow:var(--shadow); outline:none; }
+  .search input:focus, .select:focus, .input:focus, textarea:focus { border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-soft); outline:none; }
+  .chips { display:flex; gap:8px; overflow-x:auto; padding:2px 0 8px; scrollbar-width:none; }
+  .chips::-webkit-scrollbar { display:none; }
+  .chip { flex:none; border:1px solid var(--line); background:var(--card); border-radius:999px; padding:6px 12px; font-size:13px; cursor:pointer; white-space:nowrap; }
+  .chip[aria-pressed="true"] { background:var(--brand); border-color:var(--brand); color:var(--brand-ink); }
+  .chip small { opacity:.75; margin-left:4px; }
+  .select, .input { width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:12px; background:var(--card); }
+  .select { appearance:none; -webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7686' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 12px center; padding-right:36px; }
+  .select:disabled, .input:disabled { background-color:#f1f4f8; color:var(--muted); }
+  .toolbar { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+  .toolbar .select { flex:1; }
+  .count { font-size:13px; color:var(--muted); margin:2px 2px 8px; }
+  .addoff { display:flex; align-items:center; justify-content:center; gap:6px; width:100%; margin:0 0 10px; padding:11px; border:1.5px dashed #9db1d9; background:#f8faff; color:var(--brand); border-radius:12px; font-weight:600; cursor:pointer; }
+  .addoff svg { width:18px; height:18px; }
 
-/* Input inside card-row */
-.card-row input[type=text] {
-  width: 100%; border: none; background: transparent;
-  font-size: 15px; font-family: 'Sarabun', sans-serif; color: var(--text);
-  outline: none; padding: 0; height: 24px;
-}
-.card-row input[type=text]::placeholder { color: var(--muted); }
+  /* ---------- การ์ดรถ ---------- */
+  .job { position:relative; display:block; width:100%; text-align:left; background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:12px 40px 12px 16px; margin-bottom:10px; box-shadow:var(--shadow); cursor:pointer; overflow:hidden; }
+  .job::before { content:""; position:absolute; left:0; top:0; bottom:0; width:5px; background:#cfd6e0; pointer-events:none; }
+  .job.bad::before { background:var(--bad); } .job.warn::before { background:#f59e0b; }
+  .job:active { transform:scale(.995); }
+  .job .chev { position:absolute; right:12px; top:50%; transform:translateY(-50%); color:#9aa4b2; width:18px; height:18px; pointer-events:none; }
+  .plate { font-weight:700; font-size:17px; letter-spacing:.3px; }
+  .tags { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+  .tag { font-size:12px; padding:2px 8px; border-radius:6px; background:#eef1f6; color:#3b4656; }
+  .tag.media { background:var(--brand-soft); color:var(--brand); font-weight:600; }
+  .tag.ok { background:var(--ok-soft); color:var(--ok); } .tag.warn { background:var(--warn-soft); color:var(--warn); } .tag.bad { background:var(--bad-soft); color:var(--bad); }
+  .meta { font-size:13px; color:var(--muted); margin-top:6px; overflow-wrap:anywhere; }
+  .due { display:flex; align-items:center; gap:6px; font-size:13px; margin-top:6px; color:var(--muted); }
+  .due svg { width:15px; height:15px; flex:none; }
+  .due.bad { color:var(--bad); font-weight:600; } .due.warn { color:var(--warn); font-weight:600; }
+  .remarkline { font-size:13px; margin-top:8px; background:#f6f8fb; border-radius:8px; padding:6px 8px; color:#3b4656; }
+  .empty { text-align:center; color:var(--muted); padding:40px 10px; }
+  .empty svg { width:44px; height:44px; color:#c3cad5; display:block; margin:0 auto 8px; }
+  .skeleton { height:96px; border-radius:var(--radius); margin-bottom:10px; background:linear-gradient(90deg,#e9edf3 25%,#f4f6fa 50%,#e9edf3 75%); background-size:200% 100%; animation:sh 1.2s infinite; }
+  @keyframes sh { to { background-position:-200% 0; } }
 
-/* Fake select inside card-row */
-.card-row .fake-select-inline {
-  font-size: 15px; color: var(--text); cursor: pointer;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.card-row .fake-select-inline.placeholder { color: var(--muted); }
-.card-row .fake-select-inline i { font-size: 14px; color: var(--muted); flex-shrink: 0; }
-select.hidden-select { display: none; }
+  /* ---------- หน้ากรอก ---------- */
+  .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:14px; margin-bottom:12px; box-shadow:var(--shadow); }
+  .card h2 { font-size:15px; margin:0 0 10px; font-weight:600; display:flex; align-items:center; gap:6px; }
+  .req { color:var(--bad); }
+  .hint { font-size:12px; color:var(--muted); font-weight:400; margin-left:auto; }
+  .fl { display:block; font-size:13px; font-weight:600; margin:10px 0 6px; }
+  .fl:first-child { margin-top:0; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .pills { display:flex; flex-wrap:wrap; gap:8px; }
+  .pill { border:1.5px solid var(--line); background:#fff; border-radius:12px; padding:9px 14px; cursor:pointer; font-size:14px; }
+  .pill[aria-pressed="true"] { border-color:var(--brand); background:var(--brand-soft); color:var(--brand); font-weight:600; }
+  .pill.normal[aria-pressed="true"] { border-color:var(--ok); background:var(--ok-soft); color:var(--ok); }
+  .pill.bad[aria-pressed="true"] { border-color:var(--bad); background:var(--bad-soft); color:var(--bad); }
+  .pill:disabled { opacity:.55; cursor:not-allowed; }
+  .grid4 { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+  .grid4 .pill { text-align:center; padding:10px 4px; }
+  @media (max-width:420px) { .grid4 { grid-template-columns:repeat(2,1fr); } }
+  textarea { width:100%; min-height:72px; padding:10px 12px; border:1px solid var(--line); border-radius:12px; resize:vertical; background:#fff; }
+  .drop { display:flex; flex-direction:column; align-items:center; gap:4px; border:2px dashed #b9c6e3; background:#f8faff; color:var(--brand); border-radius:12px; padding:18px; cursor:pointer; font-weight:600; }
+  .drop svg { width:28px; height:28px; }
+  .drop input { display:none; }
+  .thumbs { display:grid; grid-template-columns:repeat(auto-fill,minmax(88px,1fr)); gap:8px; margin-top:10px; }
+  .thumb { position:relative; aspect-ratio:1/1; border-radius:10px; overflow:hidden; background:#e9edf3; }
+  .thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+  .thumb .x { position:absolute; top:4px; right:4px; width:26px; height:26px; border:none; border-radius:13px; background:rgba(15,27,45,.7); color:#fff; cursor:pointer; font-size:16px; line-height:1; z-index:2; }
+  .thumb .st { position:absolute; left:0; right:0; bottom:0; font-size:11px; text-align:center; padding:3px 0; color:#fff; background:rgba(15,27,45,.65); z-index:1; }
+  .thumb .st.done { background:rgba(21,128,61,.92); } .thumb .st.err { background:rgba(185,28,28,.92); }
+  .thumb.up::after { content:""; position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(255,255,255,.35); pointer-events:none; }
+  .formbar { margin-top:4px; padding:4px 0 calc(28px + env(safe-area-inset-bottom)); }
+  .formbar .wrap { padding:0; }
+  .form-mode main { padding-bottom:0; }
+  .btn { width:100%; border:none; border-radius:12px; padding:14px; font-weight:700; font-size:16px; background:var(--brand); color:#fff; cursor:pointer; box-shadow:0 6px 16px rgba(29,78,216,.25); }
+  .btn:disabled { background:#9db1d9; box-shadow:none; cursor:not-allowed; }
+  .msg { font-size:14px; margin:8px 2px 0; min-height:0; }
+  .msg.err { color:var(--bad); } .msg.ok { color:var(--ok); }
 
-/* ── Chip group (Type of wrap / Model name) ── */
-.chip-group { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 0; }
-.chip { padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border); font-size: 13px; cursor: pointer; transition: all .15s; background: var(--card); color: var(--text); }
-.chip.selected { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+  /* ---------- ประวัติ ---------- */
+  .seg { display:grid; grid-template-columns:repeat(3,1fr); background:#e6ebf2; border-radius:12px; padding:4px; gap:4px; margin-bottom:10px; }
+  .seg button { border:none; background:transparent; border-radius:9px; padding:8px; cursor:pointer; font-size:14px; color:#3b4656; }
+  .seg button[aria-pressed="true"] { background:#fff; color:var(--ink); font-weight:600; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .hist { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:12px 14px; margin-bottom:10px; box-shadow:var(--shadow); }
+  .hist .top { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+  .hist .time { font-size:12px; color:var(--muted); white-space:nowrap; }
+  .hist .who { font-size:13px; color:var(--muted); margin-top:6px; }
+  .hist .actions { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+  .link { display:inline-flex; align-items:center; gap:6px; text-decoration:none; color:var(--brand); font-weight:600; font-size:14px; border:1px solid var(--brand-soft); background:var(--brand-soft); border-radius:10px; padding:7px 12px; cursor:pointer; }
+  .link.edit { color:var(--warn); background:var(--warn-soft); border-color:#f3d9a6; }
+  .link svg { width:16px; height:16px; }
+  .dayhead { font-size:13px; font-weight:600; color:var(--muted); margin:14px 2px 8px; }
 
-/* ── Job Type ── */
-.jobtype-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
-  padding: 10px;
-}
-.jobtype-card {
-  padding: 16px 10px; text-align: center; cursor: pointer;
-  background: var(--bg); font-size: 13px; font-weight: 600; color: var(--muted2);
-  transition: all 0.15s; user-select: none; -webkit-tap-highlight-color: transparent;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-  border-radius: var(--radius-sm); border: 2px solid transparent;
-}
-.jobtype-card i { font-size: 22px; }
-.jobtype-card:active { transform: scale(0.97); }
-.jobtype-card.active[data-type="install"] { background: #ecfdf5; border-color: #059669; color: #059669; }
-.jobtype-card.active[data-type="peel"]    { background: #fff7ed; border-color: #d97706; color: #d97706; }
-.jobtype-card.active[data-type="inspect"] { background: #eff6ff; border-color: #1d4ed8; color: #1d4ed8; }
-.jobtype-card.active[data-type="demo"]    { background: #f5f3ff; border-color: #7c3aed; color: #7c3aed; }
+  /* ---------- แถบเมนูล่าง ---------- */
+  .tabbar { position:fixed; left:0; right:0; bottom:0; z-index:25; background:#fff; border-top:1px solid var(--line); padding-bottom:env(safe-area-inset-bottom); }
+  .tabbar .wrap { display:grid; grid-template-columns:1fr 1fr; }
+  .tab { border:none; background:none; padding:9px 0 8px; display:flex; flex-direction:column; align-items:center; gap:2px; font-size:12px; color:var(--muted); cursor:pointer; }
+  .tab svg { width:22px; height:22px; }
+  .tab[aria-selected="true"] { color:var(--brand); font-weight:600; }
 
-/* ── Condition checkboxes ── */
-.condition-block { padding: 14px 16px; border-bottom: 1px solid var(--border); }
-.condition-block:last-child { border-bottom: none; }
-.condition-title {
-  font-size: 12px; font-weight: 700; color: var(--muted2);
-  margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
-}
-.condition-title i { font-size: 14px; }
-.cb-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-.cb-item {
-  display: flex; flex-direction: column; align-items: center; gap: 5px;
-  padding: 10px 4px; border-radius: var(--radius-sm); border: 1px solid var(--border);
-  background: var(--bg); cursor: pointer; transition: all 0.12s;
-  user-select: none; -webkit-tap-highlight-color: transparent;
-}
-.cb-box {
-  width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--border-hover);
-  background: #fff; display: flex; align-items: center; justify-content: center;
-  transition: all 0.12s; flex-shrink: 0;
-}
-.cb-item span { font-size: 11px; color: var(--muted2); font-weight: 500; text-align: center; }
-.cb-item.checked { border-color: var(--orange); background: var(--orange-bg); }
-.cb-item.checked .cb-box { background: var(--orange); border-color: var(--orange); }
-.cb-item.checked .cb-box::after { content: '✓'; color: #fff; font-size: 11px; font-weight: 700; }
-.cb-item.checked span { color: var(--orange); }
+  .toast { position:fixed; left:50%; bottom:84px; transform:translateX(-50%) translateY(20px); opacity:0; z-index:80; pointer-events:none; background:var(--navy); color:#fff; padding:10px 16px; border-radius:12px; font-size:14px; box-shadow:0 8px 24px rgba(0,0,0,.2); transition:.25s; max-width:calc(100% - 28px); }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.err { background:var(--bad); }
 
-/* ── Status selector ── */
-.status-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--border); }
-.status-card {
-  padding: 16px 6px; text-align: center; cursor: pointer; background: var(--surface);
-  transition: all 0.12s; user-select: none; -webkit-tap-highlight-color: transparent;
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-}
-.status-card:first-child { border-radius: var(--radius) 0 0 var(--radius); }
-.status-card:last-child  { border-radius: 0 var(--radius) var(--radius) 0; }
-.status-card i    { font-size: 22px; color: var(--muted); }
-.status-card span { font-size: 12px; font-weight: 600; color: var(--muted2); }
-.status-card.s-install   { background: var(--green-bg); border-color: var(--green-border); }
-.status-card.s-install i,   .status-card.s-install span   { color: var(--green); }
-.status-card.s-installno { background: #fff7ed; border-color: #f59e0b; }
-.status-card.s-installno i, .status-card.s-installno span { color: #d97706; }
-.status-card.s-swap      { background: var(--blue-bg); }
-.status-card.s-swap i,   .status-card.s-swap span         { color: var(--blue); }
-.status-card.s-cancel    { background: var(--red-bg); }
-.status-card.s-cancel i, .status-card.s-cancel span       { color: var(--red); }
-
-/* ── Detail box ── */
-.detail-box {
-  display: none; padding: 14px 16px; border-top: 1px solid var(--border);
-  background: var(--bg); animation: slideDown 0.16s ease;
-}
-.detail-box.show { display: block; }
-@keyframes slideDown { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
-.detail-field { margin-bottom: 10px; }
-.detail-field:last-child { margin-bottom: 0; }
-.detail-field label {
-  display: block; font-size: 11px; font-weight: 700; color: var(--muted2);
-  margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em;
-}
-.detail-field label .req { color: #e03e3e; }
-.detail-field input[type=text],
-.detail-field select,
-.detail-field textarea {
-  width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border);
-  background: var(--surface); color: var(--text);
-  font-size: 14px; font-family: 'Sarabun', sans-serif;
-  padding: 10px 12px; transition: border-color 0.12s;
-}
-.detail-field select {
-  -webkit-appearance: none; appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239b9a97' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px;
-}
-.detail-field textarea { height: 72px; resize: none; line-height: 1.5; }
-.detail-field input[type=text]:focus,
-.detail-field select:focus,
-.detail-field textarea:focus {
-  outline: none; border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(35,131,226,0.15);
-}
-
-/* ── Photo ── */
-.photo-zone {
-  margin: 14px 16px 0; border: 1.5px dashed var(--border-hover); border-radius: var(--radius);
-  padding: 20px 14px; text-align: center; cursor: pointer; background: var(--bg);
-  position: relative; transition: border-color 0.15s;
-}
-.photo-zone:active { border-color: var(--accent); }
-.photo-zone input  { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-.photo-zone i      { font-size: 28px; color: var(--muted); display: block; margin-bottom: 6px; }
-.photo-zone p      { font-size: 13px; color: var(--muted2); font-weight: 600; }
-.photo-zone small  { font-size: 11px; color: var(--muted); }
-.preview-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr);
-  gap: 6px; padding: 10px 16px 0;
-}
-.preview-item { position: relative; aspect-ratio: 1; }
-.preview-item img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border); }
-.preview-item .rm {
-  position: absolute; top: -5px; right: -5px;
-  width: 20px; height: 20px; border-radius: 50%;
-  background: #e03e3e; border: 2px solid #fff; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-}
-.preview-item .rm i { font-size: 9px; color: #fff; }
-.path-box {
-  margin: 10px 16px 14px; background: var(--accent-bg); border: 1px solid #c5dbf4;
-  border-radius: var(--radius-sm); padding: 8px 12px; font-size: 11px; color: var(--accent);
-  display: flex; align-items: center; gap: 6px;
-}
-.path-box i { font-size: 13px; flex-shrink: 0; }
-
-/* ── Submit ── */
-.submit-btn {
-  width: 100%; height: 54px; border-radius: var(--radius); border: none;
-  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
-  color: #fff; font-size: 16px; font-weight: 700;
-  font-family: 'Sarabun', sans-serif; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  transition: opacity 0.15s, transform 0.1s;
-  box-shadow: 0 4px 14px rgba(29,78,216,0.4);
-  letter-spacing: 0.02em;
-}
-.submit-btn:active   { opacity: 0.88; transform: scale(0.99); }
-.submit-btn:disabled { background: var(--muted); cursor: not-allowed; box-shadow: none; }
-.submit-btn i { font-size: 18px; }
-
-/* ── Toast ── */
-.toast {
-  display: none; position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
-  background: #1a1a2e; color: #fff; padding: 13px 24px; border-radius: 100px;
-  font-size: 14px; font-weight: 600; z-index: 999;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.25); white-space: nowrap;
-}
-.toast.error { background: var(--red); }
-.toast.success { background: linear-gradient(135deg, #059669, #047857); }
-
-/* ── Success Overlay ── */
-.success-overlay {
-  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-  z-index: 2000; align-items: center; justify-content: center;
-}
-.success-overlay.show { display: flex; }
-.success-card {
-  background: #fff; border-radius: 20px; padding: 32px 28px 28px;
-  width: 88%; max-width: 360px; text-align: center;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-  animation: popIn .25s ease;
-}
-@keyframes popIn {
-  from { transform: scale(.85); opacity: 0; }
-  to   { transform: scale(1);   opacity: 1; }
-}
-.success-icon { font-size: 64px; line-height: 1; margin-bottom: 12px; }
-.success-title { font-size: 22px; font-weight: 700; color: #059669; margin-bottom: 20px; }
-.success-info { background: #f0fdf4; border-radius: 12px; padding: 16px; margin-bottom: 20px; text-align: left; }
-.success-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 15px; }
-.success-row:not(:last-child) { border-bottom: 1px solid #d1fae5; }
-.success-label { color: #6b7280; }
-.success-value { font-weight: 600; color: #111827; }
-.success-plate { font-size: 22px; font-weight: 800; color: #059669; letter-spacing: 1px; }
-.success-btn {
-  width: 100%; padding: 14px; background: #059669; color: #fff;
-  border: none; border-radius: 12px; font-size: 16px; font-weight: 700;
-  cursor: pointer; margin-top: 4px;
-}
-
-/* ── Loading ── */
-.loading-overlay {
-  display: none; position: fixed; inset: 0; background: rgba(55,53,47,0.6);
-  z-index: 998; align-items: center; justify-content: center;
-  flex-direction: column; gap: 14px; backdrop-filter: blur(2px);
-}
-.loading-overlay.show { display: flex; }
-.spinner-wrap {
-  width: 56px; height: 56px; border-radius: 16px;
-  background: #fff; display: flex; align-items: center; justify-content: center;
-}
-.spinner {
-  width: 28px; height: 28px; border: 3px solid #e0e0e0;
-  border-top-color: var(--text); border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.loading-overlay p { color: #fff; font-size: 14px; font-weight: 600; }
-
-/* ── LINE Warning Banner ── */
-.line-warn {
-  margin-bottom: 14px;
-  background: linear-gradient(135deg, #fffbeb, #fef3c7);
-  border: 1px solid #fcd34d; border-radius: var(--radius);
-  padding: 14px 16px; font-size: 13px; color: #92400e;
-  display: flex; align-items: center; gap: 10px;
-  box-shadow: var(--shadow-sm);
-}
-.line-warn i { font-size: 20px; flex-shrink: 0; color: #d97706; }
-
-/* ── Modal Picker ── */
-.modal-picker-overlay {
-  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999;
-  background: rgba(0,0,0,0.4); align-items: flex-end;
-  backdrop-filter: blur(1px);
-}
-.modal-picker-overlay.open { display: flex; }
-.modal-picker-sheet {
-  background: var(--surface); border-radius: 20px 20px 0 0;
-  width: 100%; max-height: 80vh; display: flex; flex-direction: column;
-  padding-bottom: env(safe-area-inset-bottom);
-  box-shadow: 0 -4px 32px rgba(0,0,0,0.12);
-}
-.modal-picker-handle {
-  width: 36px; height: 4px; border-radius: 2px; background: var(--border);
-  margin: 10px auto 0; flex-shrink: 0;
-}
-.modal-picker-header {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 12px 20px 10px; border-bottom: 1px solid var(--border);
-}
-.modal-picker-header h3 { font-size: 16px; font-weight: 700; color: var(--text); }
-.modal-picker-close {
-  background: var(--bg); border: none; width: 28px; height: 28px;
-  border-radius: 50%; cursor: pointer; color: var(--muted2); font-size: 14px;
-  display: flex; align-items: center; justify-content: center;
-}
-.modal-picker-search {
-  margin: 10px 14px; padding: 10px 14px; border-radius: var(--radius);
-  border: 1px solid var(--border); font-size: 15px;
-  font-family: 'Sarabun', sans-serif; width: calc(100% - 28px);
-  background: var(--bg); outline: none; transition: border-color 0.12s;
-}
-.modal-picker-search:focus { border-color: var(--accent); background: #fff; }
-.modal-picker-list {
-  overflow-y: auto; flex: 1; padding: 4px 10px 16px;
-  -webkit-overflow-scrolling: touch;
-}
-.modal-picker-item {
-  padding: 12px 14px; border-radius: var(--radius-sm); cursor: pointer;
-  font-size: 15px; font-family: 'Sarabun', sans-serif; color: var(--text);
-  transition: background 0.1s; margin-bottom: 1px;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.modal-picker-item:active { background: var(--bg); }
-.modal-picker-item.selected {
-  background: var(--accent-bg); color: var(--accent); font-weight: 600;
-}
-.modal-picker-item.selected::after { content: '✓'; font-size: 14px; }
-.modal-picker-item.placeholder { color: var(--muted); font-size: 14px; }
+  /* ---------- หน้าต่างย่อย (ผู้ดูแล / แก้ไขงานของตัวเอง) และกล่องยืนยันส่งสำเร็จ ---------- */
+  .ov { display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:60; background:rgba(0,0,0,.4); align-items:flex-end; }
+  .ov.open { display:flex; }
+  .sheet { background:#fff; width:100%; max-height:88vh; overflow-y:auto; border-radius:18px 18px 0 0; padding:14px 14px calc(18px + env(safe-area-inset-bottom)); }
+  .sheet .shead { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .sheet .shead h3 { margin:0; font-size:16px; }
+  .xbtn { width:30px; height:30px; border:none; border-radius:15px; background:#eef1f6; cursor:pointer; font-size:16px; }
+  .okbox { position:fixed; top:0; left:0; right:0; bottom:0; z-index:90; display:none; align-items:center; justify-content:center; background:rgba(15,27,45,.45); }
+  .okbox.show { display:flex; }
+  .okbox .in { background:#fff; border-radius:18px; padding:22px 26px; text-align:center; max-width:300px; box-shadow:0 12px 40px rgba(0,0,0,.25); }
+  .okbox .tick { width:56px; height:56px; border-radius:28px; background:var(--ok-soft); color:var(--ok); display:grid; place-items:center; margin:0 auto 10px; }
+  .okbox .tick svg { width:30px; height:30px; }
+  .okbox b { display:block; font-size:17px; }
+  .okbox span { display:block; font-size:13px; color:var(--muted); margin-top:4px; }
 </style>
 </head>
 <body>
+<!-- ไอคอน -->
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l3 2"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+  <symbol id="i-photo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></symbol>
+  <symbol id="i-empty" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+</svg>
 
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="spinner-wrap"><div class="spinner"></div></div>
-  <p id="loadingText">กำลังส่งข้อมูล...</p>
-  <button id="loadingCancelBtn" onclick="cancelSubmit()" style="display:none;margin-top:8px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:8px 24px;border-radius:100px;font-size:14px;font-family:'Sarabun',sans-serif;cursor:pointer;">ยกเลิก</button>
-</div>
+<header class="appbar">
+  <div class="wrap">
+    <div class="row">
+      <button class="iconbtn hide" id="back" type="button" aria-label="กลับ"><svg><use href="#i-back"/></svg></button>
+      <div class="grow">
+        <h1 id="title">ปิดงานติดตั้งสื่อรถ</h1>
+        <div class="sub" id="subtitle">กำลังโหลด…</div>
+      </div>
+      <button class="iconbtn admin hide" id="auditBtn" type="button" aria-label="ตรวจสอบย้อนหลัง (ผู้ดูแล)"><svg><use href="#i-shield"/></svg></button>
+      <button class="iconbtn" id="reload" type="button" aria-label="โหลดใหม่"><svg><use href="#i-refresh"/></svg></button>
+    </div>
+    <div class="stats" id="stats">
+      <div class="stat"><b id="sAll">–</b><span>งานค้าง</span></div>
+      <div class="stat bad"><b id="sBad">–</b><span>เลยกำหนด</span></div>
+      <div class="stat warn"><b id="sSoon">–</b><span>ครบใน 3 วัน</span></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="banner hide" id="banner"></div>
+
+  <!-- งานค้าง -->
+  <section id="listView">
+    <div class="search"><svg><use href="#i-search"/></svg><input type="search" id="q" placeholder="ค้นหาทะเบียน สายรถ เบอร์ หรือสินค้า"></div>
+    <div class="chips" id="mediaChips"></div>
+    <div class="toolbar"><select class="select" id="depot"><option value="">ทุกอู่</option></select></div>
+    <button type="button" class="addoff" id="addOff"><svg><use href="#i-plus"/></svg>เพิ่มงานนอกรายการ</button>
+    <div class="count" id="shown"></div>
+    <div id="list"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+  </section>
+
+  <!-- กรอกปิดงาน -->
+  <section id="formView" class="hide">
+    <div class="card" id="car"></div>
+    <div class="card hide" id="missingCard"></div>
+    <div class="card">
+      <h2>สถานะงาน <span class="req">*</span></h2>
+      <div class="pills" id="statusPills"></div>
+    </div>
+    <div class="card hide" id="condCard"></div>
+    <div class="card">
+      <h2>Type of wrap <span class="req">*</span></h2>
+      <div class="pills" id="wrapPills"></div>
+    </div>
+    <div class="card">
+      <h2>Model name <span class="req">*</span></h2>
+      <div class="pills" id="modelPills"></div>
+    </div>
+    <div class="card">
+      <h2>การลอกภาพโฆษณา <span class="req">*</span></h2>
+      <div class="pills" id="peelPills"></div>
+    </div>
+    <div class="card">
+      <h2>สีหลุด<span class="hint">เลือกด้านที่พบ หรือ ปกติ</span></h2>
+      <div class="grid4" id="paint"></div>
+    </div>
+    <div class="card">
+      <h2>ตัวถังผุ<span class="hint">เลือกด้านที่พบ หรือ ปกติ</span></h2>
+      <div class="grid4" id="rust"></div>
+    </div>
+    <div class="card">
+      <h2>ใบอนุญาตขนส่ง<span class="hint">เลือกได้หลายข้อ</span></h2>
+      <div class="grid4" id="lic"></div>
+    </div>
+    <div class="card">
+      <h2>รูปภาพ <span class="req" id="photoReq">*</span><span class="hint" id="photoHint"></span></h2>
+      <label class="drop"><svg><use href="#i-camera"/></svg>ถ่ายรูป หรือเลือกจากคลังภาพ<input type="file" id="file" accept="image/*" multiple></label>
+      <div class="thumbs" id="thumbs"></div>
+    </div>
+    <div class="card">
+      <h2>ชื่อช่าง / ทีม <span class="req">*</span></h2>
+      <select class="select" id="by"><option value="">เลือกชื่อ…</option></select>
+    </div>
+    <div class="formbar"><div class="wrap">
+      <button type="button" class="btn" id="send">ส่งปิดงาน</button>
+      <div class="msg" id="msg"></div>
+    </div></div>
+  </section>
+
+  <!-- ประวัติ -->
+  <section id="historyView" class="hide">
+    <div class="seg" id="range">
+      <button type="button" data-v="today">วันนี้</button>
+      <button type="button" data-v="7" aria-pressed="true">7 วัน</button>
+      <button type="button" data-v="30">30 วัน</button>
+    </div>
+    <div class="toolbar"><select class="select" id="who"><option value="">ทุกคน</option></select></div>
+    <div class="search"><svg><use href="#i-search"/></svg><input type="search" id="hq" placeholder="ค้นหาทะเบียน หรือสินค้า"></div>
+    <div class="count" id="hshown"></div>
+    <div id="hlist"></div>
+  </section>
+</main>
+
+<nav class="tabbar" id="tabbar"><div class="wrap">
+  <button class="tab" type="button" id="tabJobs" aria-selected="true"><svg><use href="#i-list"/></svg>งานค้าง</button>
+  <button class="tab" type="button" id="tabHist" aria-selected="false"><svg><use href="#i-history"/></svg>ประวัติ</button>
+</div></nav>
+
+<!-- แก้ไขทะเบียน/สายรถ/หมายเลขรถ ของงานตัวเองที่ส่งวันนี้ -->
+<div class="ov" id="ownOv"><div class="sheet">
+  <div class="shead"><h3>แก้ไขข้อมูลงาน (วันนี้)</h3><button type="button" class="xbtn" id="ownClose" aria-label="ปิด">✕</button></div>
+  <p class="hint" style="margin:0 0 6px">แก้ได้เฉพาะ ทะเบียน / สายรถ / หมายเลขรถ ของงานที่คุณส่งเองวันนี้</p>
+  <label class="fl">ทะเบียนรถ</label><input class="input" id="ownPlate" maxlength="12" autocomplete="off">
+  <div class="row2">
+    <div><label class="fl">สายรถ</label><input class="input" id="ownRoute" maxlength="20" autocomplete="off"></div>
+    <div><label class="fl">หมายเลขรถ</label><input class="input" id="ownBus" maxlength="10" autocomplete="off"></div>
+  </div>
+  <button type="button" class="btn" id="ownSave" style="margin-top:14px">บันทึกการแก้ไข</button>
+</div></div>
+
+<!-- ผู้ดูแล: ค้นหา/แก้ไขย้อนหลัง -->
+<div class="ov" id="auditOv"><div class="sheet" style="min-height:60vh">
+  <div class="shead"><h3>ตรวจสอบ/แก้ไขข้อมูลย้อนหลัง</h3><button type="button" class="xbtn" id="auditClose" aria-label="ปิด">✕</button></div>
+  <input class="input" id="auditQ" placeholder="ค้นหา ทะเบียน / สายรถ / สินค้า / ช่าง / อู่…" autocomplete="off">
+  <div class="row2" style="margin-top:8px"><input class="input" type="date" id="auditFrom"><input class="input" type="date" id="auditTo"></div>
+  <div id="auditBody" style="margin-top:12px"><div class="empty">พิมพ์คำค้นหา หรือเลือกช่วงวันที่</div></div>
+</div></div>
+<div class="ov" id="auditEditOv"><div class="sheet">
+  <div class="shead"><h3>แก้ไขรายการ</h3><button type="button" class="xbtn" id="auditEditClose" aria-label="ปิด">✕</button></div>
+  <label class="fl">ชื่อช่าง/ทีม</label><input class="input" id="aeTech" autocomplete="off">
+  <label class="fl">อู่</label><input class="input" id="aeDepot" autocomplete="off">
+  <label class="fl">ทะเบียนรถ</label><input class="input" id="aePlate" autocomplete="off">
+  <div class="row2">
+    <div><label class="fl">สายรถ</label><input class="input" id="aeRoute" autocomplete="off"></div>
+    <div><label class="fl">หมายเลขรถ</label><input class="input" id="aeBus" autocomplete="off"></div>
+  </div>
+  <label class="fl">ชื่อสินค้า</label><input class="input" id="aeProduct" autocomplete="off">
+  <button type="button" class="btn" id="aeSave" style="margin-top:14px">บันทึกการแก้ไข</button>
+</div></div>
+
+<datalist id="productList"></datalist>
+<div class="okbox" id="okbox"><div class="in"><div class="tick"><svg><use href="#i-check"/></svg></div><b id="okTitle">ส่งงานสำเร็จ</b><span id="okSub"></span></div></div>
 <div class="toast" id="toast"></div>
-
-<!-- Success Overlay -->
-<div class="success-overlay" id="successOverlay">
-  <div class="success-card">
-    <div class="success-icon">✅</div>
-    <div class="success-title">ส่งรายงานสำเร็จ!</div>
-    <div class="success-info">
-      <div class="success-row">
-        <span class="success-label">ทะเบียน</span>
-        <span class="success-value success-plate" id="sucPlate">—</span>
-      </div>
-      <div class="success-row">
-        <span class="success-label">สินค้า</span>
-        <span class="success-value" id="sucProduct">—</span>
-      </div>
-      <div class="success-row">
-        <span class="success-label">สถานะ</span>
-        <span class="success-value" id="sucStatus">—</span>
-      </div>
-      <div class="success-row">
-        <span class="success-label">รูปภาพ</span>
-        <span class="success-value" id="sucPhotos">—</span>
-      </div>
-    </div>
-    <button class="success-btn" onclick="closeSuccess()">ปิด / ส่งงานถัดไป</button>
-  </div>
-</div>
-
-<!-- History Modal -->
-<div class="modal-picker-overlay" id="historyOverlay">
-  <div class="modal-picker-sheet" style="max-height:85vh">
-    <div class="modal-picker-handle"></div>
-    <div class="modal-picker-header">
-      <h3>ประวัติงานของฉัน</h3>
-      <button class="modal-picker-close" onclick="closeHistory()">✕</button>
-    </div>
-    <div id="historyBody" style="overflow-y:auto;flex:1;padding:12px 14px 20px">
-      <p style="text-align:center;color:#9b9a97;font-size:14px;padding:20px">กำลังโหลด...</p>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: ตรวจสอบ/แก้ไขข้อมูลย้อนหลัง (Admin เท่านั้น) -->
-<div class="modal-picker-overlay" id="auditOverlay">
-  <div class="modal-picker-sheet" style="max-height:90vh">
-    <div class="modal-picker-handle"></div>
-    <div class="modal-picker-header">
-      <h3>🔍 ตรวจสอบ/แก้ไขข้อมูลย้อนหลัง</h3>
-      <button class="modal-picker-close" onclick="closeAudit()">✕</button>
-    </div>
-    <div style="padding:10px 14px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid #eee">
-      <input type="text" id="auditQ" placeholder="🔍 ค้นหา ทะเบียน / สายรถ / สินค้า / ช่าง / อู่..." style="width:100%;padding:10px 12px;border:1px solid #e2e2e2;border-radius:8px;font-size:14px;font-family:'Sarabun',sans-serif" oninput="auditSearchDebounced()">
-      <div style="display:flex;gap:8px">
-        <input type="date" id="auditFrom" style="flex:1;padding:8px 10px;border:1px solid #e2e2e2;border-radius:8px;font-size:13px;font-family:'Sarabun',sans-serif" onchange="auditSearch()">
-        <input type="date" id="auditTo" style="flex:1;padding:8px 10px;border:1px solid #e2e2e2;border-radius:8px;font-size:13px;font-family:'Sarabun',sans-serif" onchange="auditSearch()">
-      </div>
-    </div>
-    <div id="auditBody" style="overflow-y:auto;flex:1;padding:12px 14px 20px">
-      <p style="text-align:center;color:#9b9a97;font-size:14px;padding:20px">พิมพ์คำค้นหา หรือเลือกช่วงวันที่ เพื่อค้นหารายการ</p>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: แก้ไขรายการ -->
-<div class="modal-picker-overlay" id="auditEditOverlay">
-  <div class="modal-picker-sheet">
-    <div class="modal-picker-handle"></div>
-    <div class="modal-picker-header">
-      <h3>แก้ไขรายการ</h3>
-      <button class="modal-picker-close" onclick="closeAuditEdit()">✕</button>
-    </div>
-    <div style="padding:14px;display:flex;flex-direction:column;gap:12px;overflow-y:auto">
-      <div>
-        <label style="font-size:12px;color:#787774;font-weight:600">ชื่อช่าง/ทีม</label>
-        <input type="text" id="editTechName" style="width:100%;padding:9px 11px;border:1px solid #e2e2e2;border-radius:8px;font-size:14px;font-family:'Sarabun',sans-serif;margin-top:4px">
-      </div>
-      <div>
-        <label style="font-size:12px;color:#787774;font-weight:600">อู่</label>
-        <input type="text" id="editDepot" style="width:100%;padding:9px 11px;border:1px solid #e2e2e2;border-radius:8px;font-size:14px;font-family:'Sarabun',sans-serif;margin-top:4px">
-      </div>
-      <div>
-        <label style="font-size:12px;color:#787774;font-weight:600">ทะเบียนรถ</label>
-        <input type="text" id="editPlate" style="width:100%;padding:9px 11px;border:1px solid #e2e2e2;border-radius:8px;font-size:14px;font-family:'Sarabun',sans-serif;margin-top:4px">
-      </div>
-      <div style="display:flex;gap:10px">
-        <div style="flex:1">
-          <label style="font-size:12px;color:#787774;font-weight:600">สายรถ</label>
-          <input type="text" id="editRoute" style="width:100%;padding:9px 11px;border:1px solid #e2e2e2;border-radius:8px;font-size:14px;font-family:'Sarabun',sans-serif;margin-top:4px">
-        </div>
-        <div style="flex:1">
-          <label style="font-size:12px;color:#787774;font-weight:600">หมายเลขรถ</label>
-          <input type="text" id="editBusnum" style="width:100%;padding:9px 11px;border:1px solid #e2e2e2;border-radius:8px;font-size:14px;font-family:'Sarabun',sans-serif;margin-top:4px">
-        </div>
-      </div>
-      <div>
-        <label style="font-size:12px;color:#787774;font-weight:600">ชื่อสินค้า</label>
-        <input type="text" id="editProduct" style="width:100%;padding:9px 11px;border:1px solid #e2e2e2;border-radius:8px;font-size:14px;font-family:'Sarabun',sans-serif;margin-top:4px">
-      </div>
-      <button onclick="saveAuditEdit()" id="auditSaveBtn" style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:700;font-family:'Sarabun',sans-serif;cursor:pointer;margin-top:6px">💾 บันทึกการแก้ไข</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: แก้ไขงานของตัวเอง (เฉพาะวันนี้) -->
-<div class="modal-picker-overlay" id="ownEditOverlay">
-  <div class="modal-picker-sheet">
-    <div class="modal-picker-handle"></div>
-    <div class="modal-picker-header">
-      <h3>แก้ไขข้อมูลงาน (วันนี้)</h3>
-      <button class="modal-picker-close" onclick="closeOwnEdit()">✕</button>
-    </div>
-    <div style="padding:14px;display:flex;flex-direction:column;gap:12px">
-      <p style="font-size:12px;color:#9b9a97;margin:0">แก้ได้เฉพาะทะเบียน/สายรถ/หมายเลขรถ ของงานที่คุณกรอกเองในวันนี้เท่านั้น</p>
-      <div>
-        <label style="font-size:12px;color:#787774;font-weight:600">ทะเบียนรถ</label>
-        <input type="text" id="ownEditPlate" style="width:100%;padding:9px 11px;border:1px solid #e2e2e2;border-radius:8px;font-size:14px;font-family:'Sarabun',sans-serif;margin-top:4px">
-      </div>
-      <div style="display:flex;gap:10px">
-        <div style="flex:1">
-          <label style="font-size:12px;color:#787774;font-weight:600">สายรถ</label>
-          <input type="text" id="ownEditRoute" style="width:100%;padding:9px 11px;border:1px solid #e2e2e2;border-radius:8px;font-size:14px;font-family:'Sarabun',sans-serif;margin-top:4px">
-        </div>
-        <div style="flex:1">
-          <label style="font-size:12px;color:#787774;font-weight:600">หมายเลขรถ</label>
-          <input type="text" id="ownEditBusnum" style="width:100%;padding:9px 11px;border:1px solid #e2e2e2;border-radius:8px;font-size:14px;font-family:'Sarabun',sans-serif;margin-top:4px">
-        </div>
-      </div>
-      <button onclick="saveOwnEdit()" id="ownEditSaveBtn" style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:700;font-family:'Sarabun',sans-serif;cursor:pointer;margin-top:6px">💾 บันทึกการแก้ไข</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: อู่ -->
-<div class="modal-picker-overlay" id="depotPickerOverlay">
-  <div class="modal-picker-sheet">
-    <div class="modal-picker-handle"></div>
-    <div class="modal-picker-header">
-      <h3>เลือกอู่</h3>
-      <button class="modal-picker-close" onclick="closeDepotPicker()">✕</button>
-    </div>
-    <input class="modal-picker-search" id="depotSearch" placeholder="🔍 ค้นหาอู่..." oninput="filterDepot(this.value)">
-    <div class="modal-picker-list" id="depotList"></div>
-  </div>
-</div>
-
-<!-- Modal: Media Type -->
-<div class="modal-picker-overlay" id="mediatypePickerOverlay">
-  <div class="modal-picker-sheet">
-    <div class="modal-picker-handle"></div>
-    <div class="modal-picker-header">
-      <h3>เลือก Media Type</h3>
-      <button class="modal-picker-close" onclick="closeMediatypePicker()">✕</button>
-    </div>
-    <div class="modal-picker-list" id="mediatypeList"></div>
-  </div>
-</div>
-
-<div class="page">
-
-  <!-- Header -->
-  <div class="header">
-    <div class="logo">PB</div>
-    <div class="header-info">
-      <h1>Posting &amp; Demolish</h1>
-      <p>Street-Bus Division · Plan B Media</p>
-    </div>
-    <button onclick="openHistory()" style="position:relative;z-index:1;margin-left:auto;background:#fff;border:1px solid rgba(255,255,255,0.5);color:#0f172a;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:700;font-family:'Sarabun',sans-serif;cursor:pointer;flex-shrink:0;display:flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,0.25);"><i class="ti ti-history" style="font-size:17px"></i>ประวัติงาน</button>
-    <button onclick="openAudit()" id="auditBtn" style="position:relative;z-index:1;display:none;background:rgba(245,158,11,0.18);border:1px solid rgba(245,158,11,0.4);color:#fde68a;border-radius:8px;padding:7px 12px;font-size:12px;font-family:'Sarabun',sans-serif;cursor:pointer;flex-shrink:0;align-items:center;gap:5px;"><i class="ti ti-search" style="font-size:15px"></i>ตรวจสอบย้อนหลัง</button>
-  </div>
-
-  <!-- LINE Warning Banner (แสดงเมื่อเปิดนอก LINE) -->
-  <div class="line-warn" id="lineWarnBanner" style="display:none">
-    <i class="ti ti-alert-triangle"></i>
-    <span>กรุณาเปิดแอปนี้ผ่าน LINE เท่านั้น — ไม่สามารถส่งรายงานจากเบราว์เซอร์ได้</span>
-  </div>
-
-  <!-- ประเภทงาน -->
-  <div class="section-label">ประเภทงาน</div>
-  <div class="card" style="overflow:hidden">
-    <div class="jobtype-grid">
-      <div class="jobtype-card" data-type="install" onclick="selectJobType(this,'install')">
-        <i class="ti ti-tool"></i> งานติดตั้ง
-      </div>
-      <div class="jobtype-card" data-type="peel" onclick="selectJobType(this,'peel')">
-        <i class="ti ti-scissors"></i> งานลอก
-      </div>
-      <div class="jobtype-card" data-type="inspect" onclick="selectJobType(this,'inspect')">
-        <i class="ti ti-clipboard-check"></i> งานตรวจรถ
-      </div>
-      <div class="jobtype-card" data-type="demo" onclick="selectJobType(this,'demo')">
-        <i class="ti ti-speakerphone"></i> Demo &amp; Events
-      </div>
-    </div>
-  </div>
-
-  <!-- ข้อมูลงาน -->
-  <div class="section-label">ข้อมูลงาน</div>
-  <div class="card">
-
-    <!-- ชื่อช่าง -->
-    <div class="card-row">
-      <div class="card-row-icon"><i class="ti ti-user"></i></div>
-      <div class="card-row-body">
-        <div class="card-row-label">ชื่อ <span class="req">*</span></div>
-        <select id="techName" style="width:100%;border:none;background:transparent;font-size:15px;font-family:'Sarabun',sans-serif;color:inherit;padding:2px 0;outline:none;-webkit-appearance:none">
-          <option value="">— เลือกชื่อช่าง / ทีม —</option>
-          <option>ช่างนนท์</option>
-          <option>ช่างเจน</option>
-          <option>ช่างจอร์ด</option>
-          <option>ช่างเหน่ง</option>
-          <option>ช่างเพียว</option>
-          <option>ช่างนิว</option>
-          <option>ช่างณุ</option>
-          <option>ช่างกอล์ฟ</option>
-          <option>ช่างต้อม</option>
-          <option>ทีม Hello</option>
-          <option>ทีม PB</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- อู่ -->
-    <div class="card-row" onclick="openDepotPicker()" style="cursor:pointer">
-      <div class="card-row-icon"><i class="ti ti-building-community"></i></div>
-      <div class="card-row-body">
-        <div class="card-row-label">อู่ <span class="req">*</span></div>
-        <div class="fake-select-inline placeholder" id="depotDisplay">
-          <span>— เลือกอู่ —</span>
-          <i class="ti ti-chevron-right"></i>
-        </div>
-      </div>
-    </div>
-
-    <!-- ทะเบียน -->
-    <div class="card-row">
-      <div class="card-row-icon"><i class="ti ti-id"></i></div>
-      <div class="card-row-body">
-        <div class="card-row-label">ทะเบียนรถ <span class="req">*</span></div>
-        <input type="text" id="plate" placeholder="เช่น 16-8217" maxlength="12" autocomplete="off">
-      </div>
-    </div>
-
-    <!-- สายรถ + หมายเลขรถ -->
-    <div class="card-row" style="gap:0;padding:0;">
-      <div class="card-row" style="flex:1;border-right:1px solid var(--border);border-radius:0;box-shadow:none;margin:0">
-        <div class="card-row-icon"><i class="ti ti-route"></i></div>
-        <div class="card-row-body">
-          <div class="card-row-label">สายรถ</div>
-          <input type="text" id="route" placeholder="เช่น 8, 39" maxlength="20" autocomplete="off">
-        </div>
-      </div>
-      <div class="card-row" style="flex:1;border-radius:0;box-shadow:none;margin:0">
-        <div class="card-row-icon"><i class="ti ti-bus"></i></div>
-        <div class="card-row-body">
-          <div class="card-row-label">หมายเลขรถ</div>
-          <input type="text" id="busnum" placeholder="เช่น 2085" maxlength="10" autocomplete="off">
-        </div>
-      </div>
-    </div>
-
-    <!-- ชื่อสินค้า -->
-    <div class="card-row">
-      <div class="card-row-icon"><i class="ti ti-tag"></i></div>
-      <div class="card-row-body">
-        <div class="card-row-label">ชื่อสินค้า <span class="req">*</span></div>
-        <input type="text" id="product" placeholder="พิมพ์เพื่อค้นหาสินค้าที่เคยกรอก..." maxlength="80" autocomplete="off" list="productList">
-        <datalist id="productList"></datalist>
-      </div>
-    </div>
-
-    <!-- Media Type -->
-    <div class="card-row" style="align-items:flex-start">
-      <div class="card-row-icon"><i class="ti ti-layers"></i></div>
-      <div class="card-row-body">
-        <div class="card-row-label">Media Type <span class="req">*</span></div>
-        <div class="chip-group" id="mediatypeChipGroup">
-          <div class="chip" onclick="selectMediatypeChip(this,'BusWrap')">BusWrap</div>
-          <div class="chip" onclick="selectMediatypeChip(this,'MuvAds')">MuvAds</div>
-          <div class="chip" onclick="selectMediatypeChip(this,'NCA_Bus')">NCA_Bus</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Type of wrap -->
-    <div class="card-row" style="align-items:flex-start">
-      <div class="card-row-icon"><i class="ti ti-layout-distribute-horizontal"></i></div>
-      <div class="card-row-body">
-        <div class="card-row-label">Type of wrap</div>
-        <div class="chip-group" id="wrapTypeGroup">
-          <div class="chip" onclick="toggleChip(this,'wrapType')">HW</div>
-          <div class="chip" onclick="toggleChip(this,'wrapType')">FW</div>
-          <div class="chip" onclick="toggleChip(this,'wrapType')">QW</div>
-          <div class="chip" onclick="toggleChip(this,'wrapType')">HW+IB</div>
-          <div class="chip" onclick="toggleChip(this,'wrapType')">FW+IB</div>
-          <div class="chip" onclick="toggleChip(this,'wrapType')">IB</div>
-          <div class="chip" onclick="toggleChip(this,'wrapType')">StickerWrap</div>
-          <div class="chip" onclick="toggleChip(this,'wrapType')">Sticker Wrap+Lightbox</div>
-          <div class="chip" onclick="toggleChip(this,'wrapType')">Sticker Wrap+Lightbox+Roof</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Model name -->
-    <div class="card-row" style="align-items:flex-start">
-      <div class="card-row-icon"><i class="ti ti-bus"></i></div>
-      <div class="card-row-body">
-        <div class="card-row-label">Model name</div>
-        <div class="chip-group" id="modelNameGroup">
-          <div class="chip" onclick="toggleChip(this,'modelName')">TSB02</div>
-          <div class="chip" onclick="toggleChip(this,'modelName')">BLK</div>
-          <div class="chip" onclick="toggleChip(this,'modelName')">Isuzu55</div>
-          <div class="chip" onclick="toggleChip(this,'modelName')">Isuzu56</div>
-          <div class="chip" onclick="toggleChip(this,'modelName')">Hino44</div>
-          <div class="chip" onclick="toggleChip(this,'modelName')">Hino45</div>
-          <div class="chip" onclick="toggleChip(this,'modelName')">Daewoo67</div>
-          <div class="chip" onclick="toggleChip(this,'modelName')">Nex1</div>
-          <div class="chip" onclick="toggleChip(this,'modelName')">Nex2</div>
-          <div class="chip" onclick="toggleChip(this,'modelName')">BENZ</div>
-          <div class="chip" onclick="toggleChip(this,'modelName')">SUNLONG</div>
-          <div class="chip" onclick="toggleChip(this,'modelName')">ZHONGTONG</div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- การลอกภาพโฆษณา -->
-  <div class="section-label">การลอกภาพโฆษณา</div>
-  <div class="card">
-    <div class="chip-group" id="peelChipGroup">
-      <div class="chip" onclick="selectPeelChip(this,'yes')"><i class="ti ti-scissors"></i> มีลอก</div>
-      <div class="chip" onclick="selectPeelChip(this,'no')"><i class="ti ti-ban"></i> ไม่มีลอก</div>
-    </div>
-  </div>
-
-  <!-- สภาพตัวถัง -->
-  <div class="section-label">สภาพตัวถัง</div>
-  <div class="card">
-    <div class="condition-block">
-      <div class="condition-title">
-        <i class="ti ti-paint" style="color:var(--orange)"></i> สีหลุด
-      </div>
-      <div class="chip-group" id="colorChipGroup">
-        <div class="chip" onclick="toggleCbChip(this,'color','back')">ด้านหลัง</div>
-        <div class="chip" onclick="toggleCbChip(this,'color','left')">ด้านซ้าย</div>
-        <div class="chip" onclick="toggleCbChip(this,'color','right')">ด้านขวา</div>
-        <div class="chip" onclick="toggleCbChip(this,'color','normal')">ปกติ</div>
-      </div>
-    </div>
-    <div class="condition-block" style="border-bottom:none">
-      <div class="condition-title">
-        <i class="ti ti-alert-triangle" style="color:var(--red)"></i> ตัวถังผุ
-      </div>
-      <div class="chip-group" id="bodyChipGroup">
-        <div class="chip" onclick="toggleCbChip(this,'body','back')">ด้านหลัง</div>
-        <div class="chip" onclick="toggleCbChip(this,'body','left')">ด้านซ้าย</div>
-        <div class="chip" onclick="toggleCbChip(this,'body','right')">ด้านขวา</div>
-        <div class="chip" onclick="toggleCbChip(this,'body','normal')">ปกติ</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ใบอนุญาตขนส่ง -->
-  <div class="section-label">ใบอนุญาตขนส่ง</div>
-  <div class="card">
-    <div class="chip-group" id="licenseChipGroup">
-      <div class="chip" onclick="toggleLicenseChip(this,'mee_kk')">มี_คค</div>
-      <div class="chip" onclick="toggleLicenseChip(this,'mee_krut')">มี_ตราครุฑ</div>
-      <div class="chip" onclick="toggleLicenseChip(this,'mai_kk')">ไม่มี_คค</div>
-      <div class="chip" onclick="toggleLicenseChip(this,'mai_krut')">ไม่มี_ตราครุฑ</div>
-    </div>
-  </div>
-
-  <!-- สถานะงาน -->
-  <div class="section-label">สถานะงาน</div>
-  <div class="card" style="padding:0;overflow:hidden">
-    <div class="status-grid">
-      <div class="status-card" onclick="selectStatus(this,'install','s-install')">
-        <i class="ti ti-circle-check"></i>
-        <span>งานเสร็จปกติ</span>
-      </div>
-      <div class="status-card" onclick="selectStatus(this,'installno','s-installno')">
-        <i class="ti ti-circle-x"></i>
-        <span>งานเสร็จไม่รับงาน</span>
-      </div>
-      <div class="status-card" onclick="selectStatus(this,'swap','s-swap')">
-        <i class="ti ti-arrows-exchange"></i>
-        <span>เปลี่ยนคัน</span>
-      </div>
-      <div class="status-card" onclick="selectStatus(this,'cancel','s-cancel')">
-        <i class="ti ti-x"></i>
-        <span>ยกเลิก</span>
-      </div>
-    </div>
-
-    <!-- detail: งานเสร็จไม่รับงาน -->
-    <div class="detail-box" id="detailInstallNo">
-      <div class="detail-field">
-        <label>หมายเหตุ <span class="req">*</span></label>
-        <select id="installNoReason">
-          <option value="">— เลือกสาเหตุ —</option>
-          <option>สติ้กเกอร์มาไม่ครบ</option>
-          <option>ไม่มี PVC ตัวถัง</option>
-          <option>ไม่มี PVC หลังคา</option>
-          <option>ไม่มี PVC เสา</option>
-          <option>ไม่มี C2 กระจก</option>
-          <option>ไม่มีตัวไดคัท</option>
-          <option>ไม่มี In Bus</option>
-          <option>ไม่มีแถบดำ</option>
-          <option>ไม่มีโลโก้ PlanB</option>
-          <option>ไม่มีโลโก้ NC</option>
-          <option>งานไม่เรียบร้อย</option>
-          <option>อื่นๆ (ระบุในหมายเหตุ)</option>
-        </select>
-      </div>
-      <div class="detail-field">
-        <label>ตำแหน่งที่มีปัญหา</label>
-        <select id="installNoNote">
-          <option value="">— เลือกตำแหน่ง —</option>
-          <option>ด้านซ้าย</option>
-          <option>ด้านขวา</option>
-          <option>ด้านหลัง</option>
-          <option>ภายในรถ</option>
-          <option>ด้านซ้าย + ด้านขวา</option>
-          <option>ด้านซ้าย + ด้านหลัง</option>
-          <option>ด้านขวา + ด้านหลัง</option>
-          <option>ทุกด้าน</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- detail: เปลี่ยนคัน -->
-    <div class="detail-box" id="detailSwap">
-      <div class="detail-field">
-        <label>ทะเบียนรถคันใหม่ <span class="req">*</span></label>
-        <input type="text" id="swapNewPlate" placeholder="เช่น 16-9001" maxlength="12" autocomplete="off">
-      </div>
-      <div class="detail-field">
-        <label>สาเหตุที่เปลี่ยน</label>
-        <select id="swapReason">
-          <option value="">— เลือกสาเหตุ —</option>
-          <option>รถคันเดิมไม่มีในอู่</option>
-          <option>รถคันเดิมตัวถังเสียหาย</option>
-          <option>รถคันเดิมสีหลุด/ผุ ติดไม่ได้</option>
-          <option>รถคันเดิมออกวิ่งไปแล้ว</option>
-          <option>ลูกค้าขอเปลี่ยน</option>
-          <option>รถคันเดิมเสีย</option>
-          <option>อื่นๆ (ระบุในหมายเหตุ)</option>
-        </select>
-      </div>
-      <div class="detail-field">
-        <label>หมายเหตุ</label>
-        <textarea id="swapNote" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)"></textarea>
-      </div>
-    </div>
-
-    <!-- detail: ยกเลิก -->
-    <div class="detail-box" id="detailCancel">
-      <div class="detail-field">
-        <label>สาเหตุที่ยกเลิก <span class="req">*</span></label>
-        <select id="cancelReason">
-          <option value="">— เลือกสาเหตุ —</option>
-          <option>รถไม่อยู่ในอู่</option>
-          <option>ตัวถังรถเสียหายติดไม่ได้</option>
-          <option>รถผุ/สนิมมาก</option>
-          <option>รถออกวิ่งแล้ว ไม่กลับคืน</option>
-          <option>ไม่มีรถเปลี่ยน</option>
-          <option>ฝนตก</option>
-          <option>ลูกค้ายกเลิก Campaign</option>
-          <option>สื่อ/วัสดุไม่พร้อม</option>
-          <option>รถเสียไม่มีเปลี่ยน</option>
-          <option>สายรถไม่ตรง</option>
-          <option>อื่นๆ (ระบุในหมายเหตุ)</option>
-        </select>
-      </div>
-      <div class="detail-field">
-        <label>หมายเหตุ</label>
-        <textarea id="cancelNote" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)"></textarea>
-      </div>
-    </div>
-  </div>
-
-  <!-- รูปภาพ -->
-  <div class="section-label">รูปภาพงาน</div>
-  <div class="card">
-    <div class="photo-zone" id="photoZone">
-      <input type="file" accept="image/*" multiple id="photoInput" onchange="handlePhotos(event)" onclick="this.value=null">
-      <i class="ti ti-camera-plus"></i>
-      <p id="photoLabel">แตะเพื่อเลือกรูป</p>
-      <small>สูงสุด 40 รูป · JPG / PNG · บีบอัดอัตโนมัติ</small>
-    </div>
-    <div class="preview-grid" id="previewGrid"></div>
-    <div class="path-box">
-      <i class="ti ti-folder"></i>
-      <span id="pathText">Drive / ปีพ.ศ. / เดือน / วันที่ / MediaType / ทะเบียน</span>
-    </div>
-  </div>
-
-  <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">
-    <i class="ti ti-send"></i>
-    ส่งรายงาน
-  </button>
-
-</div>
 
 <script>
 // ============================================================
 // CONFIG
 // ============================================================
-const LIFF_ID    = '2010157654-04IFsZOC';
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbywws1pzwSLrgOgXvVWElTbBtIUryTbQXzqTfCUoVF6Olk-chHMSgtvbMQxjBesU8T-/exec';
-const API_SECRET = 'PlanbBus2025x';
-// ============================================================
+var LIFF_ID    = '2010157654-04IFsZOC';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbywws1pzwSLrgOgXvVWElTbBtIUryTbQXzqTfCUoVF6Olk-chHMSgtvbMQxjBesU8T-/exec';
+var API_SECRET = 'PlanbBus2025x';
 
-const MAX_PHOTOS  = 40;
-const MAX_RETRIES = 3;
-let selectedStatus    = '';
-let selectedJobType   = '';
-let selectedDepot     = '';
-let selectedMediatype = '';
-let selectedPeel      = '';
-let photoFiles        = [];
-let isSubmitting      = false;
-
-// ── Depot & Mediatype data ────────────────────────────────────
-const depotOptions = [
-  '33 Space',
-  'กัลปพฤกษ์','กัลปพฤกษ์EV','กำแพงเพชร',
-  'จันทน์ยิ่งยง',
-  'คลองเตย','เคหะธนฯEV','เคหะบางพลี (ใหม่)EV',
-  'ช้างเอราวัณ',
-  'ตลาดสะพานคู่','ตลิ่งชันEV',
-  'ท่าอิฐ','ท่าอิฐEV','เทศบาลบางบัวทอง','ธรรมศาสตร์รังสิต',
-  'บรมราชชนนี','บ่อดิน','บางเขน','บึงกุ่มEV',
-  'ปากเกร็ดEV','ปากน้ำEV','ปู่เจ้าสมิงพราย',
-  'พระประแดง','พระรามเก้า','พรานนกEV','พุทธบูชาEV',
-  'ฟาร์มจระเข้',
-  'มีนบุรี','มีนบุรี หนองจอกEV','มีนบุรีEV','เมกาบางนา',
-  'โลตัสลาดพร้าว',
-  'Loco สุขุมวิท71',
-  'MH Rama3','MH Rama9',
-  'นครชัยแอร์',
-  'รังสิต','รังสิต 200 ปีEV','รังสิต คลอง 6EV','รังสิต บางพูนEV',
-  'ราม 2EV','รามคำแหง 74EV','ราษฎร์บูรณะEV','ไร่ขิงEV',
-  'เลี่ยงเมืองนนท์EV','เลียบทางด่วนรามอินทรา',
-  'วัดไร่ขิง',
-  'ศาลายาEV','สวนสยาม','สายใต้ใหม่EV','สุพรรณยานยนต์EV',
-  'แสมดำ','แสมดำEV',
-  'เอกชัยEV'
+var PARALLEL = 3;     // จำนวนรูปที่อัปโหลดพร้อมกัน
+var SIDES  = [['normal', 'ปกติ'], ['back', 'ด้านหลัง'], ['left', 'ด้านซ้าย'], ['right', 'ด้านขวา']];
+var STATUS = [['install', 'งานเสร็จปกติ'], ['installno', 'งานเสร็จไม่รับงาน'], ['swap', 'เปลี่ยนคัน'], ['cancel', 'ยกเลิก']];
+var JOBTYPES = [['install', 'งานติดตั้ง'], ['peel', 'งานลอก'], ['inspect', 'งานตรวจรถ'], ['demo', 'Demo & Events']];
+var MEDIAS = ['BusWrap', 'MuvAds', 'NCA_Bus'];
+var WRAPS  = ['HW', 'FW', 'QW', 'HW+IB', 'FW+IB', 'IB', 'StickerWrap', 'Sticker Wrap+Lightbox', 'Sticker Wrap+Lightbox+Roof'];
+var MODELS = ['TSB02', 'BLK', 'Isuzu55', 'Isuzu56', 'Hino44', 'Hino45', 'Daewoo67', 'Nex1', 'Nex2', 'BENZ', 'SUNLONG', 'ZHONGTONG'];
+var LICENSE = [['mee_kk', 'มี_คค'], ['mee_krut', 'มี_ตราครุฑ'], ['mai_kk', 'ไม่มี_คค'], ['mai_krut', 'ไม่มี_ตราครุฑ']];
+var REASON_NO = ['สติ้กเกอร์มาไม่ครบ', 'ไม่มี PVC ตัวถัง', 'ไม่มี PVC หลังคา', 'ไม่มี PVC เสา', 'ไม่มี C2 กระจก', 'ไม่มีตัวไดคัท', 'ไม่มี In Bus', 'ไม่มีแถบดำ', 'ไม่มีโลโก้ PlanB', 'ไม่มีโลโก้ NC', 'งานไม่เรียบร้อย', 'อื่นๆ (ระบุในหมายเหตุ)'];
+var POS_NO = ['ด้านซ้าย', 'ด้านขวา', 'ด้านหลัง', 'ภายในรถ', 'ด้านซ้าย + ด้านขวา', 'ด้านซ้าย + ด้านหลัง', 'ด้านขวา + ด้านหลัง', 'ทุกด้าน'];
+var REASON_SWAP = ['รถคันเดิมไม่มีในอู่', 'รถคันเดิมตัวถังเสียหาย', 'รถคันเดิมสีหลุด/ผุ ติดไม่ได้', 'รถคันเดิมออกวิ่งไปแล้ว', 'ลูกค้าขอเปลี่ยน', 'รถคันเดิมเสีย', 'อื่นๆ (ระบุในหมายเหตุ)'];
+var REASON_CANCEL = ['รถไม่อยู่ในอู่', 'ตัวถังรถเสียหายติดไม่ได้', 'รถผุ/สนิมมาก', 'รถออกวิ่งแล้ว ไม่กลับคืน', 'ไม่มีรถเปลี่ยน', 'ฝนตก', 'ลูกค้ายกเลิก Campaign', 'สื่อ/วัสดุไม่พร้อม', 'รถเสียไม่มีเปลี่ยน', 'สายรถไม่ตรง', 'อื่นๆ (ระบุในหมายเหตุ)'];
+var DEPOTS = [
+  '33 Space', 'กัลปพฤกษ์', 'กัลปพฤกษ์EV', 'กำแพงเพชร', 'จันทน์ยิ่งยง', 'คลองเตย', 'เคหะธนฯEV', 'เคหะบางพลี (ใหม่)EV', 'ช้างเอราวัณ',
+  'ตลาดสะพานคู่', 'ตลิ่งชันEV', 'ท่าอิฐ', 'ท่าอิฐEV', 'เทศบาลบางบัวทอง', 'ธรรมศาสตร์รังสิต', 'บรมราชชนนี', 'บ่อดิน', 'บางเขน', 'บึงกุ่มEV',
+  'ปากเกร็ดEV', 'ปากน้ำEV', 'ปู่เจ้าสมิงพราย', 'พระประแดง', 'พระรามเก้า', 'พรานนกEV', 'พุทธบูชาEV', 'ฟาร์มจระเข้',
+  'มีนบุรี', 'มีนบุรี หนองจอกEV', 'มีนบุรีEV', 'เมกาบางนา', 'โลตัสลาดพร้าว', 'Loco สุขุมวิท71', 'MH Rama3', 'MH Rama9', 'นครชัยแอร์',
+  'รังสิต', 'รังสิต 200 ปีEV', 'รังสิต คลอง 6EV', 'รังสิต บางพูนEV', 'ราม 2EV', 'รามคำแหง 74EV', 'ราษฎร์บูรณะEV', 'ไร่ขิงEV',
+  'เลี่ยงเมืองนนท์EV', 'เลียบทางด่วนรามอินทรา', 'วัดไร่ขิง', 'ศาลายาEV', 'สวนสยาม', 'สายใต้ใหม่EV', 'สุพรรณยานยนต์EV', 'แสมดำ', 'แสมดำEV', 'เอกชัยEV'
 ];
-const mediatypeOptions = ['BusWrap','MuvAds','NCA_Bus'];
-let selectedWrapType  = '';
-let selectedModelName = '';
 
-function toggleChip(el, group) {
-  const container = el.closest('.chip-group');
-  container.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  if (group === 'wrapType')  selectedWrapType  = el.textContent;
-  if (group === 'modelName') selectedModelName = el.textContent;
+// ============================================================
+// สถานะของหน้าจอ
+// ============================================================
+var jobs = [], users = [], maxPhotos = 40, mediaFilter = '', lastLoad = 0;
+var cur = null;          // งานที่กำลังกรอก (จากรายการค้าง หรืองานนอกรายการ)
+var fs = null;           // ค่าที่กรอกในฟอร์ม
+var photos = [], busy = false, active = 0, seq = 0, album = null, albumKey = '';
+var hist = { range: '7', who: '', items: [], today: '', loaded: false };
+var ownTarget = null;    // แถวที่กำลังแก้ไข (ประวัติของตัวเอง)
+var aeTarget = null;     // แถวที่ผู้ดูแลกำลังแก้ไข
+var auditItems = [], auditTimer = null;
+var isAdminMode = new URLSearchParams(location.search).get('admin') === API_SECRET;
+var lineBlocked = false;
+var $ = function (id) { return document.getElementById(id); };
+
+function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+function icon(name) { var s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); var u = document.createElementNS('http://www.w3.org/2000/svg', 'use'); u.setAttribute('href', '#i-' + name); s.appendChild(u); return s; }
+function labelOf(list, key) { for (var i = 0; i < list.length; i++) if (list[i][0] === key) return list[i][1]; return key; }
+var toastTimer;
+function toast(text, isErr) { var t = $('toast'); t.textContent = text; t.className = 'toast show' + (isErr ? ' err' : ''); clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.className = 'toast'; }, 3800); }
+function setMsg(text, cls) { var m = $('msg'); m.textContent = text || ''; m.className = 'msg' + (cls ? ' ' + cls : ''); }
+function savedName() { try { return localStorage.getItem('installBy') || ''; } catch (e) { return ''; } }
+function saveName(v) { try { localStorage.setItem('installBy', v); } catch (e) {} }
+function newSid() { return bangkokTs() + '_' + Math.random().toString(36).slice(2, 10); }
+function bangkokTs() {
+  return new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    .format(new Date()).replace(' ', 'T') + '+07:00';
 }
 
-// ── โหลดรายชื่อสินค้าที่เคยกรอก มาเป็น autocomplete ───────────
-fetch(SCRIPT_URL + '?action=products&secret=' + API_SECRET, { redirect: 'follow' })
-  .then(r => r.json())
-  .then(d => {
-    if (d.status === 'ok' && d.products && d.products.length) {
-      document.getElementById('productList').innerHTML =
-        d.products.map(p => `<option value="${p.replace(/"/g,'&quot;')}">`).join('');
-    }
-  })
-  .catch(() => {});
+// ============================================================
+// เรียก Apps Script (GitHub Pages ต้องใช้ fetch)
+// ============================================================
+function readJson(res) {
+  return res.text().then(function (t) {
+    var j; try { j = JSON.parse(t); } catch (e) { throw new Error('เซิร์ฟเวอร์ตอบกลับไม่ถูกต้อง ลองใหม่อีกครั้ง'); }
+    if (!j || j.status !== 'ok') throw new Error((j && j.message) || 'เกิดข้อผิดพลาด');
+    return j;
+  });
+}
+function fetchRetry(url, opt, n) {
+  var tries = n || 3, attempt = 0;
+  function go() {
+    return fetch(url, opt).catch(function (err) {
+      attempt++;
+      if (attempt >= tries) throw new Error('เชื่อมต่ออินเทอร์เน็ตไม่ได้ ตรวจสัญญาณแล้วลองใหม่');
+      return new Promise(function (r) { setTimeout(r, 1000 * attempt); }).then(go);
+    });
+  }
+  return go();
+}
+function apiGet(params) {
+  var q = new URLSearchParams(); q.set('secret', API_SECRET);
+  Object.keys(params).forEach(function (k) { q.set(k, params[k]); });
+  return fetchRetry(SCRIPT_URL + '?' + q.toString(), { redirect: 'follow' }).then(readJson);
+}
+function apiPost(body) {
+  body.secret = API_SECRET;
+  return fetchRetry(SCRIPT_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) }).then(readJson);
+}
 
-// ── [FIX] LIFF init + enforce LINE client ─────────────────────
-// โหมด Admin: เปิดจากเบราว์เซอร์ได้ ถ้า URL มี ?admin=<API_SECRET>
-const isAdminMode = new URLSearchParams(location.search).get('admin') === API_SECRET;
-if (isAdminMode) document.getElementById('auditBtn').style.display = 'flex';
+// ============================================================
+// มุมมอง
+// ============================================================
+function currentView() { return $('formView').className === '' ? 'form' : ($('historyView').className === '' ? 'history' : 'list'); }
+function show(view) {
+  document.body.classList.toggle('form-mode', view === 'form');
+  $('listView').className = view === 'list' ? '' : 'hide';
+  $('formView').className = view === 'form' ? '' : 'hide';
+  $('historyView').className = view === 'history' ? '' : 'hide';
+  $('tabbar').className = view === 'form' ? 'tabbar hide' : 'tabbar';
+  $('back').className = view === 'form' ? 'iconbtn' : 'iconbtn hide';
+  $('stats').className = view === 'list' ? 'stats' : 'stats hide';
+  $('tabJobs').setAttribute('aria-selected', view !== 'history');
+  $('tabHist').setAttribute('aria-selected', view === 'history');
+  $('title').textContent = view === 'form' ? (cur && cur.plate ? cur.plate : 'งานนอกรายการ') : (view === 'history' ? 'ประวัติงานที่ส่ง' : 'ปิดงานติดตั้งสื่อรถ');
+  $('subtitle').textContent = view === 'form' ? (cur && cur.offlist ? 'กรอกข้อมูลรถเอง' : [cur.media, cur.product].filter(Boolean).join(' · ')) : (view === 'history' ? 'ดูงานที่ส่งแล้วย้อนหลัง' : 'งานค้าง ' + jobs.length + ' คัน');
+  window.scrollTo(0, 0);
+}
+
+// ============================================================
+// งานค้าง
+// ============================================================
+function urgency(j) { return j.days === null ? 'none' : (j.days < 0 ? 'bad' : (j.days <= 3 ? 'warn' : 'ok')); }
+function dueText(j) {
+  if (!j.deadline) return 'ไม่ระบุ Deadline';
+  if (j.days === null) return 'Deadline ' + j.deadline;
+  if (j.days < 0) return 'เลยกำหนด ' + (-j.days) + ' วัน · ' + j.deadline;
+  if (j.days === 0) return 'ครบกำหนดวันนี้ · ' + j.deadline;
+  return 'อีก ' + j.days + ' วัน · ' + j.deadline;
+}
+function sortJobs(a, b) { var x = a.days === null ? 1e9 : a.days, y = b.days === null ? 1e9 : b.days; return x - y || a.plate.localeCompare(b.plate); }
+
+function visibleJobs() {
+  var q = $('q').value.trim().toLowerCase(), d = $('depot').value;
+  return jobs.filter(function (j) {
+    if (mediaFilter && j.media !== mediaFilter) return false;
+    if (d && j.depot !== d) return false;
+    if (!q) return true;
+    return (j.plate + ' ' + j.route + ' ' + j.no + ' ' + j.product + ' ' + j.depot + ' ' + j.media).toLowerCase().indexOf(q) !== -1;
+  });
+}
+function carMeta(j) {
+  var route = j.route && j.route !== j.plate ? 'สาย ' + j.route : '', no = j.no && j.no !== j.plate ? 'เบอร์ ' + j.no : '';
+  return [route, no, j.depot].filter(Boolean).join(' · ');
+}
+function missingOf(j) { var m = []; if (!j.depot) m.push('อู่'); if (!j.product) m.push('สินค้า'); if (!j.media) m.push('Media Type'); return m; }
+
+function fillCar(box, j) {
+  box.appendChild(el('div', 'plate', j.plate));
+  var tags = el('div', 'tags');
+  if (j.media) tags.appendChild(el('span', 'tag media', j.media));
+  if (j.product) tags.appendChild(el('span', 'tag', j.product));
+  tags.appendChild(el('span', 'tag', labelOf(JOBTYPES, j.jobtype)));
+  var miss = missingOf(j);
+  if (miss.length) tags.appendChild(el('span', 'tag bad', 'ต้องกรอก: ' + miss.join(', ')));
+  box.appendChild(tags);
+  var m = carMeta(j);
+  if (m) box.appendChild(el('div', 'meta', m));
+  if (j.deadline) {
+    var u = urgency(j), due = el('div', 'due' + (u === 'bad' || u === 'warn' ? ' ' + u : ''));
+    due.appendChild(icon('clock')); due.appendChild(document.createTextNode(dueText(j)));
+    box.appendChild(due);
+  }
+  if (j.remark) box.appendChild(el('div', 'remarkline', j.remark));
+}
+function emptyState(box, text) { var e = el('div', 'empty'); e.appendChild(icon('empty')); e.appendChild(document.createTextNode(text)); box.appendChild(e); }
+
+function renderList() {
+  var list = $('list'), vis = visibleJobs().sort(sortJobs);
+  list.textContent = '';
+  $('shown').textContent = 'แสดง ' + vis.length + ' จาก ' + jobs.length + ' คัน · แตะรถเพื่อปิดงาน';
+  if (!vis.length) return emptyState(list, jobs.length ? 'ไม่พบรถตามที่ค้นหา' : 'ไม่มีงานค้างในรายการ · กด "เพิ่มงานนอกรายการ" ได้');
+  vis.forEach(function (j) {
+    var u = urgency(j), b = el('button', 'job' + (u === 'bad' || u === 'warn' ? ' ' + u : '')); b.type = 'button';
+    fillCar(b, j);
+    var c = icon('chev'); c.setAttribute('class', 'chev'); b.appendChild(c);
+    b.addEventListener('click', function () { openForm(j); });
+    list.appendChild(b);
+  });
+}
+function renderStats() {
+  var bad = 0, soon = 0;
+  jobs.forEach(function (j) { var u = urgency(j); if (u === 'bad') bad++; else if (u === 'warn') soon++; });
+  $('sAll').textContent = jobs.length; $('sBad').textContent = bad; $('sSoon').textContent = soon;
+}
+function renderFilters() {
+  var counts = {}, box = $('mediaChips');
+  jobs.forEach(function (j) { if (j.media) counts[j.media] = (counts[j.media] || 0) + 1; });
+  if (mediaFilter && !counts[mediaFilter]) mediaFilter = '';
+  box.textContent = '';
+  [''].concat(Object.keys(counts).sort()).forEach(function (k) {
+    var c = el('button', 'chip', k || 'ทั้งหมด'); c.type = 'button';
+    c.appendChild(el('small', '', String(k ? counts[k] : jobs.length)));
+    c.setAttribute('aria-pressed', k === mediaFilter);
+    c.addEventListener('click', function () { mediaFilter = k; try { localStorage.setItem('installMedia', k); } catch (e) {} renderFilters(); renderList(); });
+    box.appendChild(c);
+  });
+  var dep = $('depot'), curDep = dep.value, depots = {};
+  jobs.forEach(function (j) { if (j.depot && (!mediaFilter || j.media === mediaFilter)) depots[j.depot] = (depots[j.depot] || 0) + 1; });
+  dep.textContent = ''; var all = el('option', '', 'ทุกอู่'); all.value = ''; dep.appendChild(all);
+  Object.keys(depots).sort().forEach(function (k) { var o = el('option', '', k + ' (' + depots[k] + ')'); o.value = k; dep.appendChild(o); });
+  dep.value = depots[curDep] ? curDep : '';
+}
+function fillSelect(sel, values, keep) {
+  var first = sel.options[0];
+  sel.textContent = ''; sel.appendChild(first);
+  values.forEach(function (v) { var o = el('option', '', v); o.value = v; sel.appendChild(o); });
+  sel.value = values.indexOf(keep) !== -1 ? keep : '';
+}
+function load() {
+  return apiGet({ action: 'installlist' }).then(function (data) {
+    jobs = data.jobs || []; users = data.users || []; maxPhotos = data.maxPhotos || 40; lastLoad = Date.now();
+    if (!mediaFilter) { try { mediaFilter = localStorage.getItem('installMedia') || ''; } catch (e) {} }
+    renderStats(); renderFilters(); renderList();
+    fillSelect($('by'), users, $('by').value || savedName());
+    fillSelect($('who'), users, hist.who);
+    if (currentView() === 'list') $('subtitle').textContent = 'งานค้าง ' + jobs.length + ' คัน';
+  }).catch(function (e) {
+    $('list').textContent = ''; emptyState($('list'), 'โหลดรายการรถไม่สำเร็จ: ' + e.message);
+    $('subtitle').textContent = 'โหลดข้อมูลไม่สำเร็จ';
+  });
+}
+
+// ============================================================
+// หน้ากรอกปิดงาน
+// ============================================================
+// ปรับค่าจากชีต (เว้นวรรค/ , / + / ตัวพิมพ์เล็กใหญ่) ให้ตรงกับรายการมาตรฐาน
+function canon(v, list) {
+  var k = String(v || '').replace(/\s*[,+]\s*/g, '+').replace(/\s+/g, '').toLowerCase();
+  if (!k) return '';
+  for (var i = 0; i < list.length; i++) if (list[i].replace(/\s+/g, '').toLowerCase() === k) return list[i];
+  return v || '';
+}
+function blankState(j) {
+  return { status: '', wrap: canon(j.wrapType, WRAPS), model: canon(j.modelName, MODELS), peel: '', paint: {}, rust: {}, lic: {},
+    reasonNo: '', posNo: '', swapPlate: '', swapReason: '', swapNote: '', cancelReason: '', cancelNote: '' };
+}
+function openForm(j) {
+  if (busy) return;
+  cur = { offlist: false, row: j.row, plate: j.plate, route: j.route, no: j.no, depot: canon(j.depot, DEPOTS), product: j.product, media: j.media, jobtype: j.jobtype || 'install',
+          deadline: j.deadline, days: j.days, remark: j.remark, sid: null };
+  startForm(j);
+}
+function openOffList() {
+  if (busy) return;
+  cur = { offlist: true, row: 0, plate: '', route: '', no: '', depot: '', product: '', media: '', jobtype: '', sid: null };
+  startForm({});
+}
+function startForm(j) {
+  fs = blankState(j); album = null; albumKey = '';
+  fs.by = $('by').value || savedName();
+  setMsg(''); dropPhotos(true);
+  renderIdentity(); renderStatusPills(); renderCond(); renderPills('wrapPills', WRAPS, 'wrap'); renderPills('modelPills', MODELS, 'model');
+  renderPills('peelPills', [['yes', 'มีลอก'], ['no', 'ไม่มีลอก']], 'peel');
+  renderSides('paint'); renderSides('rust'); renderLic(); updatePhotoReq();
+  fillSelect($('by'), users, fs.by);
+  applyLineGate();
+  show('form');
+}
+function closeForm(keepPhotos) {
+  if (busy) return;
+  cur = null; album = null; albumKey = ''; dropPhotos(!!keepPhotos);
+  show('list');
+}
+
+// ----- ข้อมูลรถ (รายการค้าง = สรุปอ่านอย่างเดียว + ช่องที่ขาด / งานนอกรายการ = กรอกเองทั้งหมด) -----
+function pillGroup(options, value, locked, onPick, labelFn) {
+  var box = el('div', 'pills');
+  options.forEach(function (o) {
+    var key = typeof o === 'string' ? o : o[0], text = typeof o === 'string' ? o : o[1];
+    var p = el('button', 'pill', text); p.type = 'button'; p.setAttribute('aria-pressed', key === value); p.disabled = !!locked;
+    p.addEventListener('click', function () { onPick(key); });
+    box.appendChild(p);
+  });
+  return box;
+}
+function lockedByPhotos() { return photos.length > 0; }
+function addField(box, label, req, control) {
+  var l = el('label', 'fl', label); if (req) { l.appendChild(document.createTextNode(' ')); l.appendChild(el('span', 'req', '*')); }
+  box.appendChild(l); box.appendChild(control);
+}
+function textInput(key, ph, max, listId, locked) {
+  var i = el('input', 'input'); i.type = 'text'; i.value = cur[key] || ''; i.placeholder = ph || ''; i.maxLength = max || 80; i.autocomplete = 'off'; i.disabled = !!locked;
+  if (listId) i.setAttribute('list', listId);
+  i.addEventListener('input', function () { cur[key] = i.value; });
+  return i;
+}
+function depotSelect() {
+  var s = el('select', 'select'); var f = el('option', '', '— เลือกอู่ —'); f.value = ''; s.appendChild(f);
+  DEPOTS.forEach(function (d) { var o = el('option', '', d); o.value = d; s.appendChild(o); });
+  s.value = DEPOTS.indexOf(cur.depot) !== -1 ? cur.depot : '';
+  s.addEventListener('change', function () { cur.depot = s.value; });
+  return s;
+}
+function renderIdentity() {
+  var box = $('car'), miss = $('missingCard'); box.textContent = ''; miss.textContent = '';
+  var lock = lockedByPhotos();
+  if (!cur.offlist) {
+    fillCar(box, cur);
+    var need = missingOf(cur);
+    if (!need.length) { miss.className = 'card hide'; return; }
+    miss.className = 'card';
+    miss.appendChild(el('h2', '', 'ข้อมูลที่ยังขาด'));
+    if (!cur.depot) addField(miss, 'อู่', true, depotSelect());
+    if (!cur.product) addField(miss, 'ชื่อสินค้า', true, textInput('product', 'พิมพ์เพื่อค้นหาสินค้าที่เคยกรอก…', 80, 'productList'));
+    if (!cur.media) addField(miss, 'Media Type', true, pillGroup(MEDIAS, cur.media, lock, function (k) { cur.media = k; renderIdentity(); }));
+    return;
+  }
+  $('missingCard').className = 'card hide';
+  box.appendChild(el('h2', '', 'ข้อมูลรถ'));
+  addField(box, 'ประเภทงาน', true, pillGroup(JOBTYPES, cur.jobtype, lock, function (k) { cur.jobtype = k; renderIdentity(); }));
+  addField(box, 'ทะเบียนรถ', true, textInput('plate', 'เช่น 16-8217', 12, '', lock));
+  var r2 = el('div', 'row2');
+  var c1 = el('div'), c2 = el('div');
+  addField(c1, 'สายรถ', false, textInput('route', 'เช่น 8, 39', 20));
+  addField(c2, 'หมายเลขรถ', false, textInput('no', 'เช่น 2085', 10));
+  r2.appendChild(c1); r2.appendChild(c2); box.appendChild(r2);
+  addField(box, 'อู่', true, depotSelect());
+  addField(box, 'ชื่อสินค้า', true, textInput('product', 'พิมพ์เพื่อค้นหาสินค้าที่เคยกรอก…', 80, 'productList'));
+  addField(box, 'Media Type', true, pillGroup(MEDIAS, cur.media, lock, function (k) { cur.media = k; renderIdentity(); }));
+  if (lock) box.appendChild(el('div', 'hint', 'ทะเบียน / ประเภทงาน / Media Type ล็อกไว้เพราะมีรูปอัปโหลดแล้ว (ลบรูปทั้งหมดก่อนจึงแก้ได้)'));
+}
+
+// ----- สถานะ และช่องเพิ่มตามสถานะ -----
+function renderStatusPills() {
+  var box = $('statusPills'); box.textContent = '';
+  STATUS.forEach(function (s) {
+    var p = el('button', 'pill' + (s[0] === 'cancel' ? ' bad' : ''), s[1]); p.type = 'button'; p.setAttribute('aria-pressed', s[0] === fs.status);
+    p.addEventListener('click', function () { fs.status = s[0]; renderStatusPills(); renderCond(); updatePhotoReq(); });
+    box.appendChild(p);
+  });
+}
+function selectField(box, label, req, options, key) {
+  var s = el('select', 'select'); var f = el('option', '', '— เลือก —'); f.value = ''; s.appendChild(f);
+  options.forEach(function (o) { var op = el('option', '', o); op.value = o; s.appendChild(op); });
+  s.value = options.indexOf(fs[key]) !== -1 ? fs[key] : '';
+  s.addEventListener('change', function () { fs[key] = s.value; });
+  addField(box, label, req, s);
+}
+function areaField(box, label, key, ph) {
+  var t = el('textarea'); t.placeholder = ph; t.maxLength = 300; t.value = fs[key] || '';
+  t.addEventListener('input', function () { fs[key] = t.value; });
+  addField(box, label, false, t);
+}
+function renderCond() {
+  var box = $('condCard'); box.textContent = '';
+  var s = fs.status;
+  if (!s || s === 'install') { box.className = 'card hide'; return; }
+  box.className = 'card';
+  if (s === 'installno') {
+    box.appendChild(el('h2', '', 'รายละเอียดงานเสร็จไม่รับงาน'));
+    selectField(box, 'สาเหตุที่ไม่รับงาน', true, REASON_NO, 'reasonNo');
+    selectField(box, 'ตำแหน่งที่มีปัญหา', false, POS_NO, 'posNo');
+  } else if (s === 'swap') {
+    box.appendChild(el('h2', '', 'รายละเอียดการเปลี่ยนคัน'));
+    var pi = el('input', 'input'); pi.type = 'text'; pi.placeholder = 'เช่น 16-9001'; pi.maxLength = 12; pi.autocomplete = 'off'; pi.value = fs.swapPlate;
+    pi.addEventListener('input', function () { fs.swapPlate = pi.value; });
+    addField(box, 'ทะเบียนรถคันใหม่', true, pi);
+    selectField(box, 'สาเหตุที่เปลี่ยนคัน', false, REASON_SWAP, 'swapReason');
+    areaField(box, 'หมายเหตุ', 'swapNote', 'รายละเอียดเพิ่มเติม (ถ้ามี)');
+  } else if (s === 'cancel') {
+    box.appendChild(el('h2', '', 'รายละเอียดการยกเลิก'));
+    selectField(box, 'สาเหตุที่ยกเลิก', true, REASON_CANCEL, 'cancelReason');
+    areaField(box, 'หมายเหตุ', 'cancelNote', 'รายละเอียดเพิ่มเติม (ถ้ามี)');
+  }
+}
+function renderPills(id, options, key) {
+  var box = $(id); box.textContent = '';
+  options.forEach(function (o) {
+    var k = typeof o === 'string' ? o : o[0], t = typeof o === 'string' ? o : o[1];
+    var p = el('button', 'pill', t); p.type = 'button'; p.setAttribute('aria-pressed', fs[key] === k);
+    p.addEventListener('click', function () { fs[key] = k; renderPills(id, options, key); });
+    box.appendChild(p);
+  });
+}
+// ปกติ / ด้านหลัง / ด้านซ้าย / ด้านขวา ("ปกติ" เลือกพร้อมด้านอื่นไม่ได้)
+function renderSides(group) {
+  var box = $(group), v = fs[group]; box.textContent = '';
+  SIDES.forEach(function (s) {
+    var p = el('button', 'pill' + (s[0] === 'normal' ? ' normal' : ''), s[1]); p.type = 'button'; p.setAttribute('aria-pressed', !!v[s[0]]);
+    p.addEventListener('click', function () {
+      var on = !fs[group][s[0]];
+      if (on) { if (s[0] === 'normal') fs[group] = {}; else delete fs[group].normal; }
+      fs[group][s[0]] = on; renderSides(group);
+    });
+    box.appendChild(p);
+  });
+}
+function renderLic() {
+  var box = $('lic'); box.textContent = '';
+  LICENSE.forEach(function (l) {
+    var p = el('button', 'pill', l[1]); p.type = 'button'; p.setAttribute('aria-pressed', !!fs.lic[l[0]]);
+    p.addEventListener('click', function () { fs.lic[l[0]] = !fs.lic[l[0]]; renderLic(); });
+    box.appendChild(p);
+  });
+}
+function photosRequired() { return fs && fs.status !== 'cancel'; }
+function updatePhotoReq() { $('photoReq').className = photosRequired() ? 'req' : 'req hide'; renderPhotos(); }
+
+// ============================================================
+// รูปภาพ: ย่อและอัปโหลดทันทีที่เลือก ครั้งละ PARALLEL รูป (เหมือนงานลอก)
+// ============================================================
+function compress(file) {
+  return new Promise(function (resolve, reject) {
+    var url = URL.createObjectURL(file), img = new Image();
+    img.onload = function () {
+      var s = Math.min(1, 1280 / Math.max(img.width, img.height));
+      var c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(img.width * s)); c.height = Math.max(1, Math.round(img.height * s));
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL('image/jpeg', 0.72).split(',')[1]);
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('อ่านรูปไม่ได้')); };
+    img.src = url;
+  });
+}
+function identityReady() { return !!(cur && cur.plate && cur.jobtype && cur.media); }
+// อัลบั้มรูปของงานที่กำลังกรอก (ปี/เดือน/ประเภทงาน/วันที่/Media Type/ทะเบียน) ขอจากเซิร์ฟเวอร์ครั้งเดียว
+function getAlbum() {
+  var key = [cur.plate, cur.jobtype, cur.media].join('|');
+  if (!album || albumKey !== key) {
+    albumKey = key;
+    var mine = album = apiPost({ action: 'prepareAlbum', plate: cur.plate, jobtype: cur.jobtype, media: cur.media, timestamp: bangkokTs() });
+    mine.catch(function () { if (album === mine) album = null; });
+  }
+  return album;
+}
+function trash(urls) { if (urls.length) apiPost({ action: 'trashPhotos', urls: urls }).catch(function () {}); }
+function startUpload(p) {
+  p.state = 'up'; active++; renderPhotos();
+  p.promise = getAlbum().then(function (a) {
+    return compress(p.file).then(function (data) {
+      return apiPost({ action: 'uploadPhoto', plate: p.plate, album: a.id, index: p.n, data: data });
+    });
+  }).then(function (res) {
+    p.url = res.url; p.state = 'done';
+    if (p.removed) trash([p.url]);
+  }).catch(function () {
+    p.state = 'err';
+  }).then(function () {
+    active--; renderPhotos(); pump();
+  });
+}
+function pump() { for (var i = 0; i < photos.length && active < PARALLEL; i++) if (photos[i].state === 'queue') startUpload(photos[i]); }
+function renderPhotos() {
+  var box = $('thumbs'); box.textContent = '';
+  var done = 0, err = 0;
+  photos.forEach(function (p) {
+    if (p.state === 'done') done++; if (p.state === 'err') err++;
+    var t = el('div', 'thumb' + (p.state === 'up' || p.state === 'queue' ? ' up' : '')), img = el('img'); img.src = p.preview; img.alt = 'รูปที่แนบ';
+    var label = p.state === 'done' ? '✓ อัปโหลดแล้ว' : (p.state === 'err' ? 'ไม่สำเร็จ' : (p.state === 'up' ? 'กำลังอัปโหลด…' : 'รอคิว'));
+    var st = el('div', 'st' + (p.state === 'done' ? ' done' : (p.state === 'err' ? ' err' : '')), label);
+    var x = el('button', 'x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'ลบรูปนี้');
+    x.addEventListener('click', function () { if (!busy) removePhoto(p); });
+    t.appendChild(img); t.appendChild(st); t.appendChild(x); box.appendChild(t);
+  });
+  $('photoHint').textContent = photos.length ? done + '/' + photos.length + ' รูป' + (err ? ' · ไม่สำเร็จ ' + err : '') : (photosRequired() ? 'อย่างน้อย 1 รูป' : 'ไม่บังคับเมื่อยกเลิกงาน') + ' · สูงสุด ' + maxPhotos;
+}
+function removePhoto(p) {
+  p.removed = true;
+  if (p.state === 'done') trash([p.url]);
+  URL.revokeObjectURL(p.preview);
+  photos = photos.filter(function (o) { return o !== p; });
+  renderPhotos();
+  if (cur && cur.offlist && !photos.length) renderIdentity(); // ปลดล็อกช่องทะเบียน/ประเภทงาน/Media Type
+}
+function dropPhotos(keep) {
+  if (!keep) {
+    trash(photos.filter(function (p) { return p.state === 'done'; }).map(function (p) { return p.url; }));
+    photos.forEach(function (p) { p.removed = true; });
+  }
+  photos.forEach(function (p) { URL.revokeObjectURL(p.preview); });
+  photos = []; renderPhotos();
+}
+function waitUploads(btn) {
+  return new Promise(function (resolve) {
+    (function check() {
+      var pending = photos.filter(function (p) { return p.state === 'queue' || p.state === 'up'; }).length;
+      if (!pending) return resolve();
+      btn.textContent = 'รออัปโหลดรูป ' + (photos.length - pending) + '/' + photos.length + '…';
+      setTimeout(check, 300);
+    })();
+  });
+}
+$('file').addEventListener('change', function () {
+  if (busy || !cur) { this.value = ''; return; }
+  if (!identityReady()) { this.value = ''; toast('กรอก ทะเบียน / ประเภทงาน / Media Type ให้ครบก่อนแนบรูป', true); return; }
+  var files = Array.prototype.slice.call(this.files || []), skipped = 0, wasEmpty = !photos.length;
+  files.forEach(function (f) {
+    if (f.type && f.type.indexOf('image/') !== 0) { skipped++; return; }
+    if (photos.length >= maxPhotos) { skipped++; return; }
+    photos.push({ file: f, preview: URL.createObjectURL(f), state: 'queue', plate: cur.plate, n: ++seq, promise: null });
+  });
+  this.value = '';
+  renderPhotos(); pump();
+  if (wasEmpty && photos.length) renderIdentity(); // ล็อกช่องที่กำหนดโฟลเดอร์รูป
+  if (skipped) toast('ข้าม ' + skipped + ' ไฟล์ (ไม่ใช่รูป หรือเกิน ' + maxPhotos + ' รูป)', true);
+});
+
+// ============================================================
+// ตรวจข้อมูลและส่งปิดงาน
+// ============================================================
+function validate() {
+  if (!cur.jobtype) return 'กรุณาเลือกประเภทงาน';
+  if (!cur.plate.trim()) return 'กรุณากรอกทะเบียนรถ';
+  if (!cur.depot) return 'กรุณาเลือกอู่';
+  if (!cur.product.trim()) return 'กรุณากรอกชื่อสินค้า';
+  if (!cur.media) return 'กรุณาเลือก Media Type';
+  if (!fs.status) return 'กรุณาเลือกสถานะงาน';
+  if (fs.status === 'installno' && !fs.reasonNo) return 'กรุณาเลือกสาเหตุงานเสร็จไม่รับงาน';
+  if (fs.status === 'swap' && !fs.swapPlate.trim()) return 'กรุณากรอกทะเบียนรถคันใหม่';
+  if (fs.status === 'cancel' && !fs.cancelReason) return 'กรุณาเลือกสาเหตุที่ยกเลิก';
+  if (!fs.wrap) return 'กรุณาเลือก Type of wrap';
+  if (!fs.model) return 'กรุณาเลือก Model name';
+  if (!fs.peel) return 'กรุณาเลือกการลอกภาพโฆษณา';
+  if (photosRequired() && !photos.length) return 'กรุณาแนบรูปภาพอย่างน้อย 1 รูป';
+  if (!fs.by) return 'กรุณาเลือกชื่อช่าง / ทีม';
+  return '';
+}
+function buildPayload(a) {
+  var s = fs.status, pa = fs.paint, ru = fs.rust, li = fs.lic;
+  return {
+    submissionId: cur.sid || (cur.sid = newSid()),
+    techName: fs.by, depot: cur.depot, plate: cur.plate.trim(), route: (cur.route || '').trim(), busnum: (cur.no || '').trim(),
+    product: cur.product.trim(), mediatype: cur.media, wrapType: fs.wrap, modelName: fs.model, jobtype: cur.jobtype,
+    condColor_back: !!pa.back, condColor_left: !!pa.left, condColor_right: !!pa.right, condColor_normal: !!pa.normal,
+    condBody_back: !!ru.back, condBody_left: !!ru.left, condBody_right: !!ru.right, condBody_normal: !!ru.normal,
+    license_mee_kk: !!li.mee_kk, license_mee_krut: !!li.mee_krut, license_mai_kk: !!li.mai_kk, license_mai_krut: !!li.mai_krut,
+    peelAd: fs.peel, status: s,
+    installNoReason: s === 'installno' ? fs.reasonNo : '', installNoNote: s === 'installno' ? fs.posNo : '',
+    swapNewPlate: s === 'swap' ? fs.swapPlate.trim() : '', swapReason: s === 'swap' ? fs.swapReason : '', swapNote: s === 'swap' ? fs.swapNote.trim() : '',
+    cancelReason: s === 'cancel' ? fs.cancelReason : '', cancelNote: s === 'cancel' ? fs.cancelNote.trim() : '',
+    totalPhotos: photos.length, photos: [], timestamp: bangkokTs(),
+    albumId: a ? a.id : undefined,
+    masterRow: cur.offlist ? undefined : cur.row, masterPlate: cur.offlist ? undefined : cur.plate
+  };
+}
+function showOk(plate, statusText, nPhotos) {
+  $('okTitle').textContent = 'ส่งงานสำเร็จ ✓';
+  $('okSub').textContent = plate + ' · ' + statusText + (nPhotos ? ' · รูป ' + nPhotos + ' รูป' : '');
+  $('okbox').className = 'okbox show';
+  setTimeout(function () { $('okbox').className = 'okbox'; }, 2200);
+}
+$('send').addEventListener('click', function () {
+  if (busy || !cur || lineBlocked) return;
+  var err = validate();
+  if (err) return setMsg(err, 'err');
+  saveName(fs.by);
+
+  var btn = $('send'), plate = cur.plate.trim(), statusText = labelOf(STATUS, fs.status), nPhotos = photos.length;
+  busy = true; btn.disabled = true; setMsg('');
+  photos.forEach(function (p) { if (p.state === 'err') p.state = 'queue'; });
+  renderPhotos(); pump();
+  waitUploads(btn).then(function () {
+    var failed = photos.filter(function (p) { return p.state !== 'done'; }).length;
+    if (failed) throw new Error('อัปโหลดรูปไม่สำเร็จ ' + failed + ' รูป ตรวจสัญญาณอินเทอร์เน็ต');
+    btn.textContent = 'กำลังบันทึก…';
+    return photos.length ? getAlbum() : null;
+  }).then(function (a) {
+    return apiPost(buildPayload(a));
+  }).then(function () {
+    var done = cur;
+    busy = false; btn.disabled = false; btn.textContent = 'ส่งปิดงาน';
+    done.sid = null;
+    if (!done.offlist) jobs = jobs.filter(function (j) { return j.row !== done.row; });
+    closeForm(true);
+    renderStats(); renderFilters(); renderList();
+    $('subtitle').textContent = 'งานค้าง ' + jobs.length + ' คัน';
+    showOk(plate, statusText, nPhotos);
+    toast('บันทึก ' + plate + ' เรียบร้อย — ตรวจดูได้ที่แท็บ "ประวัติ"');
+    hist.loaded = false;
+    setTimeout(load, 2500);
+  }).catch(function (e) {
+    busy = false; btn.disabled = false; btn.textContent = 'ส่งปิดงาน';
+    var msg = e.message || 'ไม่ทราบสาเหตุ';
+    setMsg('ส่งไม่สำเร็จ: ' + msg + (msg.indexOf('ปิดไปแล้ว') !== -1 ? '' : ' · กดส่งอีกครั้งได้ (ระบบกันบันทึกซ้ำให้)'), 'err');
+    if (msg.indexOf('ปิดไปแล้ว') !== -1) load();
+  });
+});
+
+// ============================================================
+// ประวัติ (อ่านงานที่ส่งแล้วจากชีต) + แก้ไขงานของตัวเองที่ส่งวันนี้
+// ============================================================
+function statusTag(s) { return el('span', 'tag ' + (s === 'งานเสร็จปกติ' ? 'ok' : (s === 'ยกเลิก' ? 'bad' : (s === 'งานเสร็จไม่รับงาน' ? 'warn' : ''))), s || '-'); }
+function renderHistory() {
+  var box = $('hlist'), q = $('hq').value.trim().toLowerCase();
+  var items = hist.items.filter(function (x) { return !q || (x.plate + ' ' + x.product + ' ' + x.depot + ' ' + x.media + ' ' + x.tech).toLowerCase().indexOf(q) !== -1; });
+  box.textContent = '';
+  var done = items.filter(function (x) { return x.status === 'งานเสร็จปกติ'; }).length;
+  $('hshown').textContent = items.length + ' รายการ · งานเสร็จปกติ ' + done + ' คัน';
+  if (!items.length) return emptyState(box, 'ไม่มีงานที่ส่งในช่วงนี้');
+  var lastDay = '';
+  items.forEach(function (x) {
+    if (x.date !== lastDay) { box.appendChild(el('div', 'dayhead', x.date), null); lastDay = x.date; }
+    var c = el('div', 'hist'), top = el('div', 'top');
+    top.appendChild(el('div', 'plate', x.plate));
+    top.appendChild(el('div', 'time', x.time ? x.time + ' น.' : ''));
+    c.appendChild(top);
+    var tags = el('div', 'tags');
+    tags.appendChild(statusTag(x.status));
+    if (x.media) tags.appendChild(el('span', 'tag media', x.media));
+    if (x.product) tags.appendChild(el('span', 'tag', x.product));
+    if (x.jobtype && x.jobtype !== 'งานติดตั้ง') tags.appendChild(el('span', 'tag', x.jobtype));
+    c.appendChild(tags);
+    var meta = [x.route && x.route !== x.plate && x.route !== '-' ? 'สาย ' + x.route : '', x.busnum ? 'เบอร์ ' + x.busnum : '', x.depot].filter(Boolean).join(' · ');
+    if (meta) c.appendChild(el('div', 'meta', meta));
+    c.appendChild(el('div', 'who', 'โดย ' + (x.tech || '-')));
+    var act = el('div', 'actions');
+    if (/^https:\/\//.test(x.folder)) {
+      var a = el('a', 'link'); a.href = x.folder; a.target = '_blank'; a.rel = 'noopener';
+      a.appendChild(icon('photo')); a.appendChild(document.createTextNode('ดูรูป' + (x.photos ? ' (' + x.photos + ')' : '')));
+      act.appendChild(a);
+    }
+    if (hist.who && x.tech === hist.who && x.date === hist.today) {
+      var e = el('button', 'link edit'); e.type = 'button';
+      e.appendChild(icon('edit')); e.appendChild(document.createTextNode('แก้ไขทะเบียน/สาย/เบอร์'));
+      e.addEventListener('click', function () { openOwn(x); });
+      act.appendChild(e);
+    }
+    if (act.childNodes.length) c.appendChild(act);
+    box.appendChild(c);
+  });
+}
+function loadHistory() {
+  var box = $('hlist'); box.textContent = '';
+  for (var i = 0; i < 3; i++) box.appendChild(el('div', 'skeleton'));
+  $('hshown').textContent = 'กำลังโหลด…';
+  return apiGet({ action: 'history', name: hist.who, range: hist.range }).then(function (res) {
+    hist.items = res.jobs || []; hist.today = res.today || ''; hist.loaded = true; renderHistory();
+  }).catch(function (e) {
+    box.textContent = ''; emptyState(box, 'โหลดประวัติไม่สำเร็จ: ' + e.message); $('hshown').textContent = '';
+  });
+}
+function openHistory() {
+  if (!hist.loaded) { if (!hist.who) { hist.who = savedName(); fillSelect($('who'), users, hist.who); } loadHistory(); }
+  show('history');
+}
+Array.prototype.forEach.call($('range').querySelectorAll('button'), function (b) {
+  b.addEventListener('click', function () {
+    hist.range = b.getAttribute('data-v');
+    Array.prototype.forEach.call($('range').querySelectorAll('button'), function (o) { o.setAttribute('aria-pressed', o === b); });
+    loadHistory();
+  });
+});
+$('who').addEventListener('change', function () { hist.who = $('who').value; loadHistory(); });
+$('hq').addEventListener('input', renderHistory);
+
+function openOv(id) { $(id).className = 'ov open'; }
+function closeOv(id) { $(id).className = 'ov'; }
+['ownOv', 'auditOv', 'auditEditOv'].forEach(function (id) { $(id).addEventListener('click', function (e) { if (e.target === this) closeOv(id); }); });
+
+function openOwn(x) {
+  ownTarget = x;
+  $('ownPlate').value = x.plate === '-' ? '' : x.plate;
+  $('ownRoute').value = x.route === '-' ? '' : x.route;
+  $('ownBus').value = x.busnum || '';
+  openOv('ownOv');
+}
+$('ownClose').addEventListener('click', function () { closeOv('ownOv'); });
+$('ownSave').addEventListener('click', function () {
+  if (!ownTarget) return;
+  var b = $('ownSave'); b.disabled = true; b.textContent = 'กำลังบันทึก…';
+  apiPost({ action: 'updateOwnRecord', techName: hist.who, rowIndex: ownTarget.rowIndex,
+    fields: { plate: $('ownPlate').value.trim(), route: $('ownRoute').value.trim(), busnum: $('ownBus').value.trim() } })
+  .then(function () { toast('บันทึกการแก้ไขแล้ว'); closeOv('ownOv'); loadHistory(); })
+  .catch(function (e) { toast(e.message || 'บันทึกไม่สำเร็จ', true); })
+  .then(function () { b.disabled = false; b.textContent = 'บันทึกการแก้ไข'; });
+});
+
+// ============================================================
+// ผู้ดูแล (?admin=รหัส): ค้นหา/แก้ไขข้อมูลย้อนหลังทุกรายการ
+// ============================================================
+function auditSearch() {
+  var q = $('auditQ').value.trim(), from = $('auditFrom').value, to = $('auditTo').value, body = $('auditBody');
+  if (!q && !from && !to) { body.textContent = ''; emptyState(body, 'พิมพ์คำค้นหา หรือเลือกช่วงวันที่'); return; }
+  body.textContent = ''; body.appendChild(el('div', 'skeleton'));
+  apiGet({ action: 'search', q: q, dateFrom: from, dateTo: to }).then(function (d) {
+    auditItems = d.results || []; body.textContent = '';
+    if (!auditItems.length) return emptyState(body, 'ไม่พบรายการ');
+    body.appendChild(el('div', 'count', 'พบ ' + auditItems.length + (d.total > auditItems.length ? ' จาก ' + d.total : '') + ' รายการ'));
+    auditItems.forEach(function (r, i) {
+      var c = el('button', 'job'); c.type = 'button'; c.style.paddingRight = '16px';
+      c.appendChild(el('div', 'plate', (r.plate || '-') + '   ' + (r.date || '')));
+      c.appendChild(el('div', 'meta', [r.techName, r.depot, r.route ? 'สาย ' + r.route : '', r.busnum ? 'รถ ' + r.busnum : ''].filter(Boolean).join(' · ')));
+      c.appendChild(el('div', 'meta', [r.product, r.status].filter(Boolean).join(' · ')));
+      c.addEventListener('click', function () { openAuditEdit(i); });
+      body.appendChild(c);
+    });
+  }).catch(function (e) { body.textContent = ''; emptyState(body, 'ค้นหาไม่ได้: ' + e.message); });
+}
+function openAuditEdit(i) {
+  var r = auditItems[i]; if (!r) return;
+  aeTarget = r;
+  $('aeTech').value = r.techName || ''; $('aeDepot').value = r.depot || ''; $('aePlate').value = r.plate || '';
+  $('aeRoute').value = r.route || ''; $('aeBus').value = r.busnum || ''; $('aeProduct').value = r.product || '';
+  openOv('auditEditOv');
+}
+$('auditBtn').addEventListener('click', function () { openOv('auditOv'); });
+$('auditClose').addEventListener('click', function () { closeOv('auditOv'); });
+$('auditEditClose').addEventListener('click', function () { closeOv('auditEditOv'); });
+$('auditQ').addEventListener('input', function () { clearTimeout(auditTimer); auditTimer = setTimeout(auditSearch, 400); });
+$('auditFrom').addEventListener('change', auditSearch);
+$('auditTo').addEventListener('change', auditSearch);
+$('aeSave').addEventListener('click', function () {
+  if (!aeTarget) return;
+  var b = $('aeSave'); b.disabled = true; b.textContent = 'กำลังบันทึก…';
+  apiPost({ action: 'updateRecord', rowIndex: aeTarget.rowIndex, fields: {
+    techName: $('aeTech').value.trim(), depot: $('aeDepot').value.trim(), plate: $('aePlate').value.trim(),
+    route: $('aeRoute').value.trim(), busnum: $('aeBus').value.trim(), product: $('aeProduct').value.trim() } })
+  .then(function () { toast('บันทึกการแก้ไขแล้ว'); closeOv('auditEditOv'); auditSearch(); })
+  .catch(function (e) { toast(e.message || 'บันทึกไม่สำเร็จ', true); })
+  .then(function () { b.disabled = false; b.textContent = 'บันทึกการแก้ไข'; });
+});
+
+// ============================================================
+// LINE (LIFF): ส่งปิดงานได้เฉพาะผ่าน LINE (ผู้ดูแลเปิดผ่านลิงก์ ?admin= ได้จากเบราว์เซอร์)
+// ============================================================
+function applyLineGate() {
+  var b = $('send');
+  if (lineBlocked) { b.disabled = true; b.textContent = 'กรุณาเปิดผ่าน LINE'; $('addOff').disabled = true; }
+}
+function setBanner(text, ok) { var b = $('banner'); b.className = 'banner' + (ok ? ' ok' : ''); b.textContent = text; }
+if (isAdminMode) $('auditBtn').className = 'iconbtn admin';
 try {
   if (typeof liff !== 'undefined') {
-    liff.init({ liffId: LIFF_ID })
-      .then(() => {
-        if (!liff.isInClient() && !isAdminMode) {
-          document.getElementById('lineWarnBanner').style.display = 'flex';
-          const btn = document.getElementById('submitBtn');
-          btn.disabled = true;
-          btn.innerHTML = '<i class="ti ti-brand-line"></i> กรุณาเปิดผ่าน LINE';
-        }
-        if (isAdminMode && !liff.isInClient()) {
-          const banner = document.getElementById('lineWarnBanner');
-          banner.style.display = 'flex';
-          banner.style.background = '#ecfdf5';
-          banner.style.borderColor = '#6ee7b7';
-          banner.style.color = '#065f46';
-          banner.innerHTML = '<i class="ti ti-shield-check"></i><span>โหมด Admin — ส่งรายงานจากเบราว์เซอร์ได้</span>';
-        }
-      })
-      .catch(err => console.warn('LIFF init:', err));
-  }
-} catch(e) { console.warn('LIFF not available:', e); }
-
-// ── ประเภทงาน ─────────────────────────────────────────────────
-function selectJobType(el, type) {
-  document.querySelectorAll('.jobtype-card').forEach(c => c.className = 'jobtype-card');
-  el.className = 'jobtype-card active';
-  selectedJobType = type;
-  updatePath();
-}
-
-// ── สภาพตัวถัง ────────────────────────────────────────────────
-const cbColor   = { back: false, left: false, right: false, normal: false };
-const cbBody    = { back: false, left: false, right: false, normal: false };
-// ── ใบอนุญาตขนส่ง ─────────────────────────────────────────────
-const cbLicense = { mee_kk: false, mee_krut: false, mai_kk: false, mai_krut: false };
-const LICENSE_ID_MAP = { mee_kk: 'cb-lc-MK', mee_krut: 'cb-lc-MR', mai_kk: 'cb-lc-NK', mai_krut: 'cb-lc-NR' };
-
-function toggleCbChip(el, group, key) {
-  const isOn = el.classList.toggle('selected');
-  if (group === 'color') cbColor[key] = isOn;
-  else                   cbBody[key]  = isOn;
-}
-
-function toggleLicenseChip(el, key) {
-  const isOn = el.classList.toggle('selected');
-  cbLicense[key] = isOn;
-}
-
-function selectMediatypeChip(el, val) {
-  document.querySelectorAll('#mediatypeChipGroup .chip').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedMediatype = val;
-}
-
-function selectPeelChip(el, val) {
-  document.querySelectorAll('#peelChipGroup .chip').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedPeel = val;
-}
-
-// ── Status ────────────────────────────────────────────────────
-function selectPeel(val) {
-  selectedPeel = val;
-}
-
-function selectStatus(el, status, cls) {
-  document.querySelectorAll('.status-card:not(#peel-yes):not(#peel-no)').forEach(c => c.className = 'status-card');
-  el.className = 'status-card ' + cls;
-  selectedStatus = status;
-  document.getElementById('detailInstallNo').className = 'detail-box' + (status === 'installno' ? ' show' : '');
-  document.getElementById('detailSwap').className      = 'detail-box' + (status === 'swap'      ? ' show' : '');
-  document.getElementById('detailCancel').className    = 'detail-box' + (status === 'cancel'    ? ' show' : '');
-  if (status === 'installno') setTimeout(() => document.getElementById('installNoReason').focus(), 50);
-  if (status === 'swap')      setTimeout(() => document.getElementById('swapNewPlate').focus(), 50);
-  if (status === 'cancel')    setTimeout(() => document.getElementById('cancelReason').focus(), 50);
-}
-
-// ── Photo ─────────────────────────────────────────────────────
-function handlePhotos(e) {
-  const slots = MAX_PHOTOS - photoFiles.length;
-  photoFiles  = [...photoFiles, ...Array.from(e.target.files).slice(0, slots)];
-  renderPreviews();
-  updatePath();
-  e.target.value = '';
-}
-function renderPreviews() {
-  const grid = document.getElementById('previewGrid');
-  grid.innerHTML = '';
-  photoFiles.forEach((f, i) => {
-    const item = document.createElement('div');
-    item.className = 'preview-item';
-    item.innerHTML = `<img src="${URL.createObjectURL(f)}" loading="lazy"><button class="rm" onclick="removePhoto(${i})"><i class="ti ti-x"></i></button>`;
-    grid.appendChild(item);
-  });
-  const lbl = document.getElementById('photoLabel');
-  const inp = document.getElementById('photoInput');
-  const n   = photoFiles.length;
-  if (n >= MAX_PHOTOS) {
-    lbl.textContent = `ครบ ${MAX_PHOTOS} รูปแล้ว`;
-    inp.disabled = true;
-  } else {
-    lbl.textContent = n > 0 ? `เพิ่มได้อีก ${MAX_PHOTOS - n} รูป` : 'แตะเพื่อเลือกรูป';
-    inp.disabled = false;
-  }
-}
-function removePhoto(idx) {
-  photoFiles.splice(idx, 1);
-  renderPreviews();
-}
-
-// ── Path preview ──────────────────────────────────────────────
-function updatePath() {
-  const mt    = selectedMediatype || 'MediaType';
-  const plate = document.getElementById('plate').value || 'ทะเบียน';
-  const jobtypeLabel = {install:'งานติดตั้ง', peel:'งานลอก', inspect:'งานตรวจรถ', demo:'Demo&Events'};
-  const jt    = (selectedJobType && jobtypeLabel[selectedJobType]) || 'ประเภทงาน';
-  const now = new Date();
-  const bkkDate = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit'
-  }).format(now);
-  const [y_ce, m, d] = bkkDate.split('-');
-  const monthAbbr = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1];
-  const folderDate = `${d}-${m}-${y_ce}`;
-  document.getElementById('pathText').textContent = `Drive / ${y_ce} / ${monthAbbr} / ${jt} / ${folderDate} / ${mt} / ${plate}`;
-}
-document.getElementById('plate').addEventListener('input', updatePath);
-updatePath();
-
-// ── Compress ──────────────────────────────────────────────────
-function compressImage(file, maxW = 1024, quality = 0.70) {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('บีบอัดรูปช้าเกินไป ลองใหม่อีกครั้ง')), 30000);
-    const img = new Image();
-    img.onload = () => {
-      clearTimeout(timer);
-      try {
-        const scale   = Math.min(1, maxW / img.width);
-        const canvas  = document.createElement('canvas');
-        canvas.width  = img.width  * scale;
-        canvas.height = img.height * scale;
-        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL('image/jpeg', quality));
-      } catch(e) { reject(e); }
-    };
-    img.onerror = () => { clearTimeout(timer); reject(new Error('โหลดรูปไม่ได้ ลองเลือกรูปใหม่')); };
-    img.src = URL.createObjectURL(file);
-  });
-}
-
-// ── [FIX] Fetch with retry + exponential backoff ──────────────
-async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
-  let lastErr;
-  for (let attempt = 0; attempt < retries; attempt++) {
-    try {
-      return await fetch(url, options);
-    } catch (err) {
-      lastErr = err;
-      if (attempt < retries - 1) {
-        await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+    liff.init({ liffId: LIFF_ID }).then(function () {
+      if (!liff.isInClient()) {
+        if (isAdminMode) { setBanner('โหมดผู้ดูแล — ส่งงานจากเบราว์เซอร์ได้', true); }
+        else { lineBlocked = true; setBanner('กรุณาเปิดแอปนี้ผ่าน LINE เท่านั้น — ไม่สามารถส่งรายงานจากเบราว์เซอร์ได้', false); applyLineGate(); }
       }
-    }
+    }).catch(function (err) { console.warn('LIFF init:', err); });
   }
-  throw lastErr;
-}
+} catch (e) { console.warn('LIFF not available:', e); }
 
-
-// ── [FIX] Bangkok timestamp ───────────────────────────────────
-function getBangkokTimestamp() {
-  return new Intl.DateTimeFormat('sv-SE', {
-    timeZone: 'Asia/Bangkok',
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit'
-  }).format(new Date()).replace(' ', 'T') + '+07:00';
-}
-
-// ── Submit ────────────────────────────────────────────────────
-async function handleSubmit() {
-  if (isSubmitting) return;  // [FIX] block duplicate tap
-
-  const techName  = document.getElementById('techName').value.trim();
-  const depot     = selectedDepot;
-  const plate     = document.getElementById('plate').value.trim();
-  const route     = document.getElementById('route').value.trim();
-  const busnum    = document.getElementById('busnum').value.trim();
-  const product   = document.getElementById('product').value.trim();
-  const mediatype = selectedMediatype;
-
-  if (!selectedJobType)   return showToast('กรุณาเลือกประเภทงาน', true);
-  if (!techName)          return showToast('กรุณากรอกชื่อ', true);
-  if (!depot)             return showToast('กรุณาเลือกอู่', true);
-  if (!plate)             return showToast('กรุณากรอกทะเบียนรถ', true);
-  if (!product)           return showToast('กรุณากรอกชื่อสินค้า', true);
-  if (!mediatype)           return showToast('กรุณาเลือก Media Type', true);
-  if (!selectedWrapType)    return showToast('กรุณาเลือก Type of wrap', true);
-  if (!selectedModelName)   return showToast('กรุณาเลือก Model name', true);
-  if (!selectedPeel)        return showToast('กรุณาเลือกการลอกภาพโฆษณา', true);
-  if (!selectedStatus)      return showToast('กรุณาเลือกสถานะงาน', true);
-  if (selectedStatus === 'installno' && !document.getElementById('installNoReason').value)
-    return showToast('กรุณาเลือกสาเหตุงานเสร็จไม่รับงาน', true);
-  if (selectedStatus === 'swap' && !document.getElementById('swapNewPlate').value.trim())
-    return showToast('กรุณากรอกทะเบียนรถคันใหม่', true);
-  if (selectedStatus === 'cancel' && !document.getElementById('cancelReason').value)
-    return showToast('กรุณาเลือกสาเหตุที่ยกเลิก', true);
-  if (!photoFiles.length && selectedStatus !== 'cancel') return showToast('กรุณาแนบรูปภาพอย่างน้อย 1 รูป', true);
-
-  const swapNewPlate = document.getElementById('swapNewPlate').value.trim();
-  const swapReason   = document.getElementById('swapReason').value;
-  const swapNote     = document.getElementById('swapNote').value.trim();
-  const cancelReason = document.getElementById('cancelReason').value;
-  const cancelNote   = document.getElementById('cancelNote').value.trim();
-
-  // [FIX] lock button immediately to prevent double submit
-  isSubmitting = true;
-  const btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-
-  // เช็คงานซ้ำ: ทะเบียนเดียวกัน + วันนี้
-  showLoading(true, 'กำลังตรวจสอบข้อมูล...');
-  try {
-    const dupRes = await fetch(SCRIPT_URL + '?action=checkdup&plate=' + encodeURIComponent(plate) + '&secret=' + API_SECRET, { redirect: 'follow' });
-    const dup    = await dupRes.json();
-    if (dup.duplicate) {
-      showLoading(false);
-      const ok = confirm(`⚠️ ทะเบียน ${plate} มีรายงานวันนี้แล้ว ${dup.count} ครั้ง\nโดย: ${dup.tech} เวลา ${dup.time} น. (${dup.jobStatus})\n\nต้องการส่งซ้ำอีกครั้งหรือไม่?`);
-      if (!ok) {
-        isSubmitting = false;
-        btn.disabled = false;
-        return;
-      }
-    }
-  } catch(e) { /* เช็คไม่ได้ก็ให้ส่งต่อไปตามปกติ */ }
-
-  showLoading(true, 'กำลังบีบอัดรูปภาพ...');
-  const photos = await Promise.all(photoFiles.map(f => compressImage(f)));
-
-  // [FIX] submissionId คงที่ตลอดการส่ง/retry ทั้งหมดของงานนี้ ป้องกันบันทึกซ้ำถ้า retry
-  const submissionId = getBangkokTimestamp() + '_' + plate.replace(/\W/g,'') + '_' + Math.random().toString(36).slice(2, 8);
-
-  const basePayload = {
-    submissionId,
-    techName,
-    depot, plate, route, busnum, product, mediatype,
-    wrapType: selectedWrapType,
-    modelName: selectedModelName,
-    jobtype: selectedJobType,
-    condColor_back:   cbColor.back,
-    condColor_left:   cbColor.left,
-    condColor_right:  cbColor.right,
-    condColor_normal: cbColor.normal,
-    condBody_back:    cbBody.back,
-    condBody_left:    cbBody.left,
-    condBody_right:   cbBody.right,
-    condBody_normal:  cbBody.normal,
-    license_mee_kk:   cbLicense.mee_kk,
-    license_mee_krut: cbLicense.mee_krut,
-    license_mai_kk:   cbLicense.mai_kk,
-    license_mai_krut: cbLicense.mai_krut,
-    peelAd: selectedPeel,
-    status: selectedStatus,
-    installNoReason: document.getElementById('installNoReason').value,
-    installNoNote:   document.getElementById('installNoNote').value.trim(),
-    swapNewPlate, swapReason, swapNote,
-    cancelReason, cancelNote,
-    totalPhotos: photos.length,
-    timestamp: getBangkokTimestamp()  // [FIX] Bangkok time
-  };
-
-  try {
-    if (photos.length === 0) {
-      // no photos (e.g. cancel status) — send one request to write the sheet
-      showLoading(true, 'กำลังส่งข้อมูล...');
-      const payload = { ...basePayload, photos: [], chunkIndex: 0, totalChunks: 0, isLastChunk: true };
-      const res  = await fetchWithRetry(SCRIPT_URL, {
-        method: 'POST', body: JSON.stringify(payload), redirect: 'follow',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-      });
-      const text = await res.text();
-      if (!text || !text.includes('{')) throw new Error('server ไม่ตอบกลับ');
-      let json;
-      try { json = JSON.parse(text); } catch(e) { throw new Error('response error'); }
-      if (json.status !== 'ok') throw new Error(json.message || 'upload failed');
-    }
-    const BATCH = 3;
-    let globalIdx = 0;
-    for (let i = 0; i < photos.length; i += BATCH) {
-      const batch = photos.slice(i, i + BATCH);
-      showLoading(true, `กำลังอัปโหลด ${Math.min(i + BATCH, photos.length)}/${photos.length} รูป...`);
-      const payload = {
-        ...basePayload,
-        photos:      batch,
-        chunkIndex:  globalIdx,
-        totalChunks: photos.length,
-        isLastChunk: (i + BATCH >= photos.length)
-      };
-      globalIdx += batch.length;
-      let ok = false;
-      for (let attempt = 0; attempt < 3 && !ok; attempt++) {
-        if (attempt > 0) await new Promise(r => setTimeout(r, 2000 * attempt));
-        try {
-          const res  = await fetchWithRetry(SCRIPT_URL, {
-            method: 'POST', body: JSON.stringify(payload), redirect: 'follow',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-          });
-          const text = await res.text();
-          if (!text || !text.includes('{')) continue;
-          const json = JSON.parse(text);
-          if (json.status === 'ok') { ok = true; }
-        } catch(e) { /* retry */ }
-      }
-      if (!ok) throw new Error(`อัปโหลดรูปที่ ${i+1}-${Math.min(i+BATCH,photos.length)} ไม่สำเร็จ ลองใหม่`);
-    }
-    showLoading(false);
-    showSuccessOverlay();
-    resetForm();
-  } catch (err) {
-    const msg = err.message || 'ไม่สามารถเชื่อมต่อได้';
-    showToast(msg.length > 40 ? 'ส่งไม่ได้ ลองใหม่อีกครั้ง' : msg, true);
-    console.error('[BusReport] submit error:', err.message);
-  } finally {
-    // [FIX] always re-enable button regardless of outcome
-    showLoading(false);
-    isSubmitting = false;
-    btn.disabled = false;
-  }
-}
-
-function resetForm() {
-  photoFiles = [];
-  renderPreviews();
-  Object.keys(cbColor).forEach(k   => { cbColor[k]   = false; });
-  Object.keys(cbBody).forEach(k    => { cbBody[k]    = false; });
-  Object.keys(cbLicense).forEach(k => { cbLicense[k] = false; });
-  ['techName','plate','route','busnum','product'].forEach(id => document.getElementById(id).value = '');
-  selectedDepot     = '';
-  selectedMediatype = '';
-  selectedWrapType  = '';
-  selectedModelName = '';
-  selectedPeel      = '';
-  document.querySelectorAll('.chip.selected').forEach(c => c.classList.remove('selected'));
-  const dd = document.getElementById('depotDisplay');
-  dd.querySelector('span').textContent = '— เลือกอู่ —'; dd.classList.add('placeholder');
-  document.querySelectorAll('.status-card').forEach(c => c.className = 'status-card');
-  selectedStatus  = '';
-  selectedJobType = '';
-  document.querySelectorAll('.jobtype-card').forEach(c => c.className = 'jobtype-card');
-  document.getElementById('detailInstallNo').className = 'detail-box';
-  document.getElementById('detailSwap').className      = 'detail-box';
-  document.getElementById('detailCancel').className    = 'detail-box';
-  document.getElementById('installNoReason').value = '';
-  document.getElementById('installNoNote').value   = '';
-  updatePath();
-}
-
-let _loadingCancelTimer = null;
-function showLoading(show, text = '') {
-  document.getElementById('loadingOverlay').classList.toggle('show', show);
-  if (text) document.getElementById('loadingText').textContent = text;
-  const cancelBtn = document.getElementById('loadingCancelBtn');
-  if (show) {
-    cancelBtn.style.display = 'none';
-    clearTimeout(_loadingCancelTimer);
-    _loadingCancelTimer = setTimeout(() => { cancelBtn.style.display = 'block'; }, 5000);
-  } else {
-    clearTimeout(_loadingCancelTimer);
-    cancelBtn.style.display = 'none';
-  }
-}
-function cancelSubmit() {
-  showLoading(false);
-  isSubmitting = false;
-  const btn = document.getElementById('submitBtn');
-  btn.disabled = false;
-  showToast('ยกเลิกแล้ว กรุณาลองส่งใหม่อีกครั้ง', true);
-}
-function showSuccessOverlay() {
-  const plateVal   = (document.getElementById('plate')?.value || '').trim() || '—';
-  const productVal = (document.getElementById('product')?.value || '').trim() || '—';
-  const statusVal  = selectedStatus === 'install'   ? 'งานเสร็จปกติ' :
-                     selectedStatus === 'installno' ? 'งานเสร็จไม่รับงาน' :
-                     selectedStatus === 'swap'      ? 'เปลี่ยนคัน' :
-                     selectedStatus === 'cancel'    ? 'ยกเลิก' : '—';
-  const photoCount = photoFiles ? photoFiles.length : 0;
-
-  document.getElementById('sucPlate').textContent   = plateVal;
-  document.getElementById('sucProduct').textContent = productVal;
-  document.getElementById('sucStatus').textContent  = statusVal;
-  document.getElementById('sucPhotos').textContent  = photoCount + ' รูป';
-  document.getElementById('successOverlay').classList.add('show');
-}
-
-function closeSuccess() {
-  document.getElementById('successOverlay').classList.remove('show');
-}
-
-function showToast(msg, isError = false, isSuccess = false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className   = 'toast' + (isError ? ' error' : isSuccess ? ' success' : '');
-  t.style.display = 'block';
-  setTimeout(() => { t.style.display = 'none'; }, 3000);
-}
-
-// ── Modal Picker: อู่ ─────────────────────────────────────────
-function buildDepotList(filter) {
-  const list = document.getElementById('depotList');
-  filter = (filter || '').toLowerCase();
-  list.innerHTML = depotOptions
-    .filter(opt => !filter || opt.toLowerCase().includes(filter))
-    .map(opt => {
-      const sel = opt === selectedDepot ? ' selected' : '';
-      return `<div class="modal-picker-item${sel}" onclick="selectDepot('${opt.replace(/'/g,"&#39;")}')">${opt}</div>`;
-    }).join('');
-}
-function openDepotPicker() {
-  buildDepotList('');
-  document.getElementById('depotSearch').value = '';
-  document.getElementById('depotPickerOverlay').classList.add('open');
-  setTimeout(() => document.getElementById('depotSearch').focus(), 300);
-}
-function closeDepotPicker() {
-  document.getElementById('depotPickerOverlay').classList.remove('open');
-}
-function selectDepot(val) {
-  selectedDepot = val;
-  const display = document.getElementById('depotDisplay');
-  display.querySelector('span').textContent = val || '— เลือกอู่ —';
-  display.classList.toggle('placeholder', !val);
-  closeDepotPicker();
-}
-function filterDepot(q) { buildDepotList(q); }
-
-// ── Modal Picker: Media Type ──────────────────────────────────
-function buildMediatypeList() {
-  const list = document.getElementById('mediatypeList');
-  list.innerHTML = mediatypeOptions.map(opt => {
-    const sel = opt === selectedMediatype ? ' selected' : '';
-    return `<div class="modal-picker-item${sel}" onclick="selectMediatype('${opt}')">${opt}</div>`;
-  }).join('');
-}
-function openMediatypePicker() {
-  buildMediatypeList();
-  document.getElementById('mediatypePickerOverlay').classList.add('open');
-}
-function closeMediatypePicker() {
-  document.getElementById('mediatypePickerOverlay').classList.remove('open');
-}
-function selectMediatype(val) {
-  selectedMediatype = val;
-  const display = document.getElementById('mediatypeDisplay');
-  display.querySelector('span').textContent = val || '— เลือก Media Type —';
-  display.classList.toggle('placeholder', !val);
-  closeMediatypePicker();
-  updatePath();
-}
-
-// ── Photo input reset ─────────────────────────────────────────
-(function() {
-  const inp = document.getElementById('photoInput');
-  inp.addEventListener('click',      function() { this.value = null; });
-  inp.addEventListener('touchstart', function() { this.value = null; }, { passive: true });
-})();
-
-// ── ปิด overlay เมื่อแตะข้างนอก ─────────────────────────────
-document.getElementById('depotPickerOverlay').addEventListener('click', function(e) {
-  if (e.target === this) closeDepotPicker();
+// ============================================================
+// เหตุการณ์ทั่วไป
+// ============================================================
+$('q').addEventListener('input', renderList);
+$('depot').addEventListener('change', renderList);
+$('by').addEventListener('change', function () { if (fs) fs.by = $('by').value; saveName($('by').value); });
+$('addOff').addEventListener('click', function () { if (!lineBlocked) openOffList(); });
+$('back').addEventListener('click', function () { closeForm(false); });
+$('tabJobs').addEventListener('click', function () { if (!busy) show('list'); });
+$('tabHist').addEventListener('click', function () { if (!busy) openHistory(); });
+$('reload').addEventListener('click', function () {
+  if (busy) return;
+  if (currentView() === 'history') loadHistory(); else load().then(function () { toast('อัปเดตรายการแล้ว'); });
 });
-document.getElementById('mediatypePickerOverlay').addEventListener('click', function(e) {
-  if (e.target === this) closeMediatypePicker();
-});
-document.getElementById('historyOverlay').addEventListener('click', function(e) {
-  if (e.target === this) closeHistory();
+document.addEventListener('visibilitychange', function () {
+  if (!document.hidden && !busy && currentView() === 'list' && Date.now() - lastLoad > 90000) load();
 });
 
-// ── ประวัติงาน ────────────────────────────────────────────────
-function openHistory() {
-  const name = document.getElementById('techName').value.trim();
-  const body = document.getElementById('historyBody');
-  document.getElementById('historyOverlay').classList.add('open');
-  if (!name) {
-    body.innerHTML = '<p style="text-align:center;color:#e03e3e;font-size:14px;padding:20px">กรุณากรอกชื่อก่อนดูประวัติงาน</p>';
-    return;
-  }
-  body.innerHTML = '<p style="text-align:center;color:#9b9a97;font-size:14px;padding:20px">กำลังโหลด...</p>';
-  fetch(SCRIPT_URL + '?action=history&name=' + encodeURIComponent(name) + '&secret=' + API_SECRET, { redirect: 'follow' })
-    .then(r => r.json())
-    .then(d => renderHistory(d, name))
-    .catch(() => { body.innerHTML = '<p style="text-align:center;color:#e03e3e;font-size:14px;padding:20px">โหลดไม่ได้ ลองใหม่อีกครั้ง</p>'; });
-}
-function closeHistory() {
-  document.getElementById('historyOverlay').classList.remove('open');
-}
+// รายชื่อสินค้าที่เคยกรอก (ช่วยพิมพ์ในงานนอกรายการ)
+apiGet({ action: 'products' }).then(function (d) {
+  var dl = $('productList'); (d.products || []).slice(0, 400).forEach(function (p) { var o = document.createElement('option'); o.value = p; dl.appendChild(o); });
+}).catch(function () {});
 
-// ── ตรวจสอบ/แก้ไขข้อมูลย้อนหลัง (Admin เท่านั้น) ───────────────
-let _auditSearchTimer = null;
-let _auditResults = [];
-
-function openAudit() {
-  document.getElementById('auditOverlay').classList.add('open');
-}
-function closeAudit() {
-  document.getElementById('auditOverlay').classList.remove('open');
-}
-function auditSearchDebounced() {
-  clearTimeout(_auditSearchTimer);
-  _auditSearchTimer = setTimeout(auditSearch, 400);
-}
-function auditSearch() {
-  const q    = document.getElementById('auditQ').value.trim();
-  const from = document.getElementById('auditFrom').value;
-  const to   = document.getElementById('auditTo').value;
-  const body = document.getElementById('auditBody');
-
-  if (!q && !from && !to) {
-    body.innerHTML = '<p style="text-align:center;color:#9b9a97;font-size:14px;padding:20px">พิมพ์คำค้นหา หรือเลือกช่วงวันที่ เพื่อค้นหารายการ</p>';
-    return;
-  }
-
-  body.innerHTML = '<p style="text-align:center;color:#9b9a97;font-size:14px;padding:20px">กำลังค้นหา...</p>';
-  const params = new URLSearchParams({ action: 'search', q, dateFrom: from, dateTo: to, secret: API_SECRET });
-  fetch(SCRIPT_URL + '?' + params.toString(), { redirect: 'follow' })
-    .then(r => r.json())
-    .then(d => renderAuditResults(d))
-    .catch(() => { body.innerHTML = '<p style="text-align:center;color:#e03e3e;font-size:14px;padding:20px">ค้นหาไม่ได้ ลองใหม่อีกครั้ง</p>'; });
-}
-function renderAuditResults(d) {
-  const body = document.getElementById('auditBody');
-  if (!d || d.status !== 'ok') { body.innerHTML = '<p style="text-align:center;color:#e03e3e;font-size:14px;padding:20px">เกิดข้อผิดพลาด</p>'; return; }
-  _auditResults = d.results || [];
-  if (!_auditResults.length) {
-    body.innerHTML = '<p style="text-align:center;color:#9b9a97;font-size:14px;padding:20px">ไม่พบรายการ</p>';
-    return;
-  }
-  const countNote = d.total > _auditResults.length ? ` (แสดง ${_auditResults.length} จากทั้งหมด ${d.total} — ค้นแคบลงเพื่อดูครบ)` : '';
-  body.innerHTML =
-    `<p style="font-size:12px;color:#9b9a97;margin-bottom:8px">พบ ${_auditResults.length} รายการ${countNote}</p>` +
-    _auditResults.map((r, i) => `
-      <div style="border:1px solid #eee;border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer" onclick="openAuditEdit(${i})">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-weight:700;font-size:14px">${r.plate || '-'}</span>
-          <span style="font-size:11px;color:#9b9a97">${r.date || '-'}</span>
-        </div>
-        <div style="font-size:12px;color:#787774;margin-top:2px">${r.techName || '-'} · ${r.depot || '-'} · สาย ${r.route || '-'} รถ ${r.busnum || '-'}</div>
-        <div style="font-size:12px;color:#787774">${r.product || '-'} · ${r.status || '-'}</div>
-      </div>`).join('');
-}
-function openAuditEdit(idx) {
-  const r = _auditResults[idx];
-  if (!r) return;
-  document.getElementById('editTechName').value = r.techName || '';
-  document.getElementById('editDepot').value    = r.depot || '';
-  document.getElementById('editPlate').value    = r.plate || '';
-  document.getElementById('editRoute').value    = r.route || '';
-  document.getElementById('editBusnum').value   = r.busnum || '';
-  document.getElementById('editProduct').value  = r.product || '';
-  document.getElementById('auditSaveBtn').dataset.rowIndex = r.rowIndex;
-  document.getElementById('auditEditOverlay').classList.add('open');
-}
-function closeAuditEdit() {
-  document.getElementById('auditEditOverlay').classList.remove('open');
-}
-async function saveAuditEdit() {
-  const btn = document.getElementById('auditSaveBtn');
-  const rowIndex = btn.dataset.rowIndex;
-  const fields = {
-    techName: document.getElementById('editTechName').value.trim(),
-    depot:    document.getElementById('editDepot').value.trim(),
-    plate:    document.getElementById('editPlate').value.trim(),
-    route:    document.getElementById('editRoute').value.trim(),
-    busnum:   document.getElementById('editBusnum').value.trim(),
-    product:  document.getElementById('editProduct').value.trim()
-  };
-  btn.disabled = true;
-  btn.textContent = 'กำลังบันทึก...';
-  try {
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST', redirect: 'follow',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'updateRecord', secret: API_SECRET, rowIndex, fields })
-    });
-    const json = await res.json();
-    if (json.status !== 'ok') throw new Error(json.message || 'บันทึกไม่สำเร็จ');
-    showToast('บันทึกการแก้ไขสำเร็จ');
-    closeAuditEdit();
-    auditSearch(); // รีเฟรชผลค้นหาให้เห็นค่าที่แก้ล่าสุด
-  } catch(err) {
-    showToast(err.message || 'บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง', true);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '💾 บันทึกการแก้ไข';
-  }
-}
-let _historyJobsByRow = {};
-let _historyTechName  = '';
-
-function renderHistory(d, name) {
-  const body = document.getElementById('historyBody');
-  if (!d || d.status !== 'ok') { body.innerHTML = '<p style="text-align:center;color:#e03e3e;font-size:14px;padding:20px">เกิดข้อผิดพลาด</p>'; return; }
-  const jobs = d.jobs || [];
-  _historyTechName = name;
-  _historyJobsByRow = {};
-  jobs.forEach(j => { if (j.rowIndex) _historyJobsByRow[j.rowIndex] = j; });
-  const stColor = s => s==='งานเสร็จปกติ'?'#059669':s==='งานเสร็จไม่รับงาน'?'#d97706':s==='เปลี่ยนคัน'?'#0284c7':'#dc2626';
-  const stIcon  = s => s==='งานเสร็จปกติ'?'✅':s==='งานเสร็จไม่รับงาน'?'⚠️':s==='เปลี่ยนคัน'?'🔄':'❌';
-  if (jobs.length === 0) {
-    body.innerHTML = `<p style="text-align:center;padding:24px 0;font-size:14px;color:#9b9a97">ไม่พบงานของ <b>${name}</b><br>ในวันนี้และเมื่อวาน</p>`;
-    return;
-  }
-  const todayJobs = jobs.filter(j => j.date === d.today);
-  const pastJobs  = jobs.filter(j => j.date !== d.today);
-  let html = `<p style="font-size:13px;color:#6b7280;margin-bottom:12px">พบ <b>${jobs.length}</b> งาน (วันนี้ ${todayJobs.length} งาน)</p>`;
-  const renderGroup = (list, label, editable) => {
-    if (!list.length) return '';
-    let g = `<p style="font-size:11px;font-weight:700;color:#9b9a97;text-transform:uppercase;letter-spacing:.06em;margin:14px 0 6px">${label}</p>`;
-    list.forEach(j => {
-      const color = stColor(j.status);
-      const editBtn = editable && j.rowIndex
-        ? `<button onclick="openOwnEdit(${j.rowIndex})" style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:6px;padding:4px 10px;font-size:11px;font-family:'Sarabun',sans-serif;cursor:pointer">✏️ แก้ไข ทะเบียน/สาย/รถ</button>`
-        : '';
-      g += `<div style="background:#f8fafc;border:1px solid #e4e6ea;border-radius:10px;padding:12px 14px;margin-bottom:8px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <span style="font-size:18px;font-weight:800;color:#059669;letter-spacing:.5px">${j.plate}</span>
-          <span style="font-size:12px;color:${color};font-weight:700">${stIcon(j.status)} ${j.status}</span>
-        </div>
-        <div style="font-size:13px;color:#374151">${j.product} · ${j.media}</div>
-        <div style="font-size:12px;color:#9b9a97;margin-top:4px;display:flex;justify-content:space-between">
-          <span>${j.depot}</span>
-          <span>${j.time} · ${j.photos} รูป ${j.folder?'<a href="'+j.folder+'" target="_blank" style="color:#1d4ed8">📁</a>':''}</span>
-        </div>
-        ${editBtn ? `<div style="margin-top:8px;text-align:right">${editBtn}</div>` : ''}
-      </div>`;
-    });
-    return g;
-  };
-  html += renderGroup(todayJobs, 'วันนี้', true);
-  html += renderGroup(pastJobs,  'เมื่อวาน', false);
-  body.innerHTML = html;
-}
-
-// ── แก้ไขงานของตัวเอง (เฉพาะวันนี้) ────────────────────────────
-function openOwnEdit(rowIndex) {
-  const j = _historyJobsByRow[rowIndex];
-  if (!j) return;
-  document.getElementById('ownEditPlate').value  = j.plate  === '-' ? '' : j.plate;
-  document.getElementById('ownEditRoute').value  = j.route  === '-' ? '' : j.route;
-  document.getElementById('ownEditBusnum').value = j.busnum || '';
-  document.getElementById('ownEditSaveBtn').dataset.rowIndex = rowIndex;
-  document.getElementById('ownEditOverlay').classList.add('open');
-}
-function closeOwnEdit() {
-  document.getElementById('ownEditOverlay').classList.remove('open');
-}
-async function saveOwnEdit() {
-  const btn = document.getElementById('ownEditSaveBtn');
-  const rowIndex = btn.dataset.rowIndex;
-  const fields = {
-    plate:  document.getElementById('ownEditPlate').value.trim(),
-    route:  document.getElementById('ownEditRoute').value.trim(),
-    busnum: document.getElementById('ownEditBusnum').value.trim()
-  };
-  btn.disabled = true;
-  btn.textContent = 'กำลังบันทึก...';
-  try {
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST', redirect: 'follow',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'updateOwnRecord', secret: API_SECRET, techName: _historyTechName, rowIndex, fields })
-    });
-    const json = await res.json();
-    if (json.status !== 'ok') throw new Error(json.message || 'บันทึกไม่สำเร็จ');
-    showToast('บันทึกการแก้ไขสำเร็จ');
-    closeOwnEdit();
-    openHistory(); // รีเฟรชประวัติงานให้เห็นค่าที่แก้ล่าสุด
-  } catch(err) {
-    showToast(err.message || 'บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง', true);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '💾 บันทึกการแก้ไข';
-  }
-}
+renderPhotos();
+load();
 </script>
 </body>
 </html>
