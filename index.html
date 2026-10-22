@@ -193,7 +193,7 @@
     <div class="stats" id="stats">
       <div class="stat"><b id="sAll">–</b><span>งานค้าง</span></div>
       <div class="stat bad"><b id="sBad">–</b><span>เลยกำหนด</span></div>
-      <div class="stat warn"><b id="sSoon">–</b><span>ครบใน 3 วัน</span></div>
+      <div class="stat warn"><b id="sSoon">–</b><span>ล่วงหน้า</span></div>
     </div>
   </div>
 </header>
@@ -207,6 +207,7 @@
     <div class="chips" id="mediaChips"></div>
     <div class="toolbar"><select class="select" id="depot"><option value="">ทุกอู่</option></select></div>
     <button type="button" class="addoff" id="addOff"><svg><use href="#i-plus"/></svg>เพิ่มงานนอกรายการ</button>
+    <button type="button" class="addoff hide" id="futureBtn" style="border-style:solid;background:#fff"></button>
     <div class="count" id="shown"></div>
     <div id="list"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
   </section>
@@ -346,7 +347,7 @@ var DEPOTS = [
 // ============================================================
 // สถานะของหน้าจอ
 // ============================================================
-var jobs = [], users = [], maxPhotos = 40, mediaFilter = '', lastLoad = 0;
+var showFuture = false, jobs = [], users = [], maxPhotos = 40, mediaFilter = '', lastLoad = 0;
 var cur = null;          // งานที่กำลังกรอก (จากรายการค้าง หรืองานนอกรายการ)
 var fs = null;           // ค่าที่กรอกในฟอร์ม
 var photos = [], busy = false, active = 0, seq = 0, album = null, albumKey = '';
@@ -418,26 +419,28 @@ function show(view) {
   $('tabJobs').setAttribute('aria-selected', view !== 'history');
   $('tabHist').setAttribute('aria-selected', view === 'history');
   $('title').textContent = view === 'form' ? (cur && cur.plate ? cur.plate : 'งานนอกรายการ') : (view === 'history' ? 'ประวัติงานที่ส่ง' : 'ปิดงานติดตั้งสื่อรถ');
-  $('subtitle').textContent = view === 'form' ? (cur && cur.offlist ? 'กรอกข้อมูลรถเอง' : [cur.media, cur.product].filter(Boolean).join(' · ')) : (view === 'history' ? 'ดูงานที่ส่งแล้วย้อนหลัง' : 'งานค้าง ' + jobs.length + ' คัน');
+  $('subtitle').textContent = view === 'form' ? (cur && cur.offlist ? 'กรอกข้อมูลรถเอง' : [cur.media, cur.product].filter(Boolean).join(' · ')) : (view === 'history' ? 'ดูงานที่ส่งแล้วย้อนหลัง' : 'งานวันนี้/ค้าง ' + $('sAll').textContent + ' คัน');
   window.scrollTo(0, 0);
 }
 
 // ============================================================
 // งานค้าง
 // ============================================================
-function urgency(j) { return j.days === null ? 'none' : (j.days < 0 ? 'bad' : (j.days <= 3 ? 'warn' : 'ok')); }
+function isFuture(j) { return j.days !== null && j.days > 0; }
+function urgency(j) { return j.days === null ? 'none' : (j.days < 0 ? 'bad' : 'ok'); }
 function dueText(j) {
   if (!j.deadline) return 'ไม่ระบุ Deadline';
   if (j.days === null) return 'Deadline ' + j.deadline;
-  if (j.days < 0) return 'เลยกำหนด ' + (-j.days) + ' วัน · ' + j.deadline;
-  if (j.days === 0) return 'ครบกำหนดวันนี้ · ' + j.deadline;
-  return 'อีก ' + j.days + ' วัน · ' + j.deadline;
+  if (j.days < 0) return 'ค้างจากวันที่ ' + j.deadline + ' (เลย ' + (-j.days) + ' วัน)';
+  if (j.days === 0) return 'งานวันนี้ · ' + j.deadline;
+  return 'งานวันที่ ' + j.deadline + ' (อีก ' + j.days + ' วัน)';
 }
 function sortJobs(a, b) { var x = a.days === null ? 1e9 : a.days, y = b.days === null ? 1e9 : b.days; return x - y || a.plate.localeCompare(b.plate); }
 
 function visibleJobs() {
   var q = $('q').value.trim().toLowerCase(), d = $('depot').value;
   return jobs.filter(function (j) {
+    if (!showFuture && isFuture(j)) return false;
     if (mediaFilter && j.media !== mediaFilter) return false;
     if (d && j.depot !== d) return false;
     if (!q) return true;
@@ -477,7 +480,7 @@ function renderList() {
   var list = $('list'), vis = visibleJobs().sort(sortJobs);
   list.textContent = '';
   $('shown').textContent = 'แสดง ' + vis.length + ' จาก ' + jobs.length + ' คัน · แตะรถเพื่อปิดงาน';
-  if (!vis.length) return emptyState(list, jobs.length ? 'ไม่พบรถตามที่ค้นหา' : 'ไม่มีงานค้างในรายการ · กด "เพิ่มงานนอกรายการ" ได้');
+  if (!vis.length) return emptyState(list, jobs.length ? (!showFuture && jobs.some(isFuture) && !$('q').value ? 'วันนี้ไม่มีงานค้าง · กด "ดูงานล่วงหน้า" เพื่อดูงานวันถัดไป' : 'ไม่พบรถตามที่ค้นหา') : 'ไม่มีงานค้างในรายการ · กด "เพิ่มงานนอกรายการ" ได้');
   vis.forEach(function (j) {
     var u = urgency(j), b = el('button', 'job' + (u === 'bad' || u === 'warn' ? ' ' + u : '')); b.type = 'button';
     fillCar(b, j);
@@ -487,9 +490,11 @@ function renderList() {
   });
 }
 function renderStats() {
-  var bad = 0, soon = 0;
-  jobs.forEach(function (j) { var u = urgency(j); if (u === 'bad') bad++; else if (u === 'warn') soon++; });
-  $('sAll').textContent = jobs.length; $('sBad').textContent = bad; $('sSoon').textContent = soon;
+  var bad = 0, fut = 0, now = 0;
+  jobs.forEach(function (j) { if (isFuture(j)) fut++; else { now++; if (urgency(j) === 'bad') bad++; } });
+  $('sAll').textContent = now; $('sBad').textContent = bad; $('sSoon').textContent = fut;
+  var fb = $('futureBtn'); fb.className = fut ? 'addoff' : 'addoff hide';
+  fb.textContent = showFuture ? 'ซ่อนงานล่วงหน้า' : 'ดูงานล่วงหน้า (' + fut + ' คัน)';
 }
 function renderFilters() {
   var counts = {}, box = $('mediaChips');
@@ -522,7 +527,7 @@ function load() {
     renderStats(); renderFilters(); renderList();
     fillSelect($('by'), users, $('by').value || savedName());
     fillSelect($('who'), users, hist.who);
-    if (currentView() === 'list') $('subtitle').textContent = 'งานค้าง ' + jobs.length + ' คัน';
+    if (currentView() === 'list') $('subtitle').textContent = 'งานวันนี้/ค้าง ' + $('sAll').textContent + ' คัน';
   }).catch(function (e) {
     $('list').textContent = ''; emptyState($('list'), 'โหลดรายการรถไม่สำเร็จ: ' + e.message);
     $('subtitle').textContent = 'โหลดข้อมูลไม่สำเร็จ';
@@ -877,7 +882,7 @@ $('send').addEventListener('click', function () {
     if (!done.offlist) jobs = jobs.filter(function (j) { return j.row !== done.row; });
     closeForm(true);
     renderStats(); renderFilters(); renderList();
-    $('subtitle').textContent = 'งานค้าง ' + jobs.length + ' คัน';
+    $('subtitle').textContent = 'งานวันนี้/ค้าง ' + $('sAll').textContent + ' คัน';
     showOk(plate, statusText, nPhotos);
     toast('บันทึก ' + plate + ' เรียบร้อย — ตรวจดูได้ที่แท็บ "ประวัติ"');
     hist.loaded = false;
@@ -1050,6 +1055,7 @@ try {
 $('q').addEventListener('input', renderList);
 $('depot').addEventListener('change', renderList);
 $('by').addEventListener('change', function () { if (fs) fs.by = $('by').value; saveName($('by').value); });
+$('futureBtn').addEventListener('click', function () { showFuture = !showFuture; renderStats(); renderList(); });
 $('addOff').addEventListener('click', function () { if (!lineBlocked) openOffList(); });
 $('back').addEventListener('click', function () { closeForm(false); });
 $('tabJobs').addEventListener('click', function () { if (!busy) show('list'); });
