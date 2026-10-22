@@ -249,7 +249,7 @@
       <label class="drop"><svg><use href="#i-camera"/></svg>ถ่ายรูป หรือเลือกจากคลังภาพ<input type="file" id="file" accept="image/*" multiple></label>
       <div class="thumbs" id="thumbs"></div>
     </div>
-    <div class="card">
+    <div class="card" id="byCard">
       <h2>ชื่อช่าง / ทีม <span class="req">*</span></h2>
       <select class="select" id="by"><option value="">เลือกชื่อ…</option></select>
     </div>
@@ -457,6 +457,7 @@ function fillCar(box, j) {
   if (j.product) tags.appendChild(el('span', 'tag', j.product));
   if (j.wrapType) tags.appendChild(el('span', 'tag', canon(j.wrapType, WRAPS)));
   if (j.modelName) tags.appendChild(el('span', 'tag', canon(j.modelName, MODELS)));
+  if (j.tech) tags.appendChild(el('span', 'tag ok', 'ช่าง: ' + j.tech));
   tags.appendChild(el('span', 'tag', labelOf(JOBTYPES, j.jobtype)));
   var miss = missingOf(j);
   if (miss.length) tags.appendChild(el('span', 'tag bad', 'ต้องกรอก: ' + miss.join(', ')));
@@ -545,7 +546,7 @@ function blankState(j) {
 function openForm(j) {
   if (busy) return;
   cur = { offlist: false, row: j.row, plate: j.plate, route: j.route, no: j.no, depot: canon(j.depot, DEPOTS), product: j.product, media: j.media, jobtype: j.jobtype || 'install',
-          wrapType: j.wrapType, modelName: j.modelName, deadline: j.deadline, days: j.days, remark: j.remark, sid: null };
+          wrapType: j.wrapType, modelName: j.modelName, tech: j.tech, deadline: j.deadline, days: j.days, remark: j.remark, sid: null };
   startForm(j);
 }
 function openOffList() {
@@ -555,12 +556,14 @@ function openOffList() {
 }
 function startForm(j) {
   fs = blankState(j); album = null; albumKey = '';
-  fs.by = $('by').value || savedName();
+  fs.assigned = j.tech && users.indexOf(j.tech) !== -1 ? j.tech : '';
+  fs.by = fs.assigned || $('by').value || savedName();
   setMsg(''); dropPhotos(true);
   renderIdentity(); renderStatusPills(); renderCond(); renderPills('wrapPills', WRAPS, 'wrap'); renderPills('modelPills', MODELS, 'model');
   renderPills('peelPills', [['yes', 'มีลอก'], ['no', 'ไม่มีลอก']], 'peel');
   $('wrapCard').className = fs.wrap ? 'card hide' : 'card'; $('modelCard').className = fs.model ? 'card hide' : 'card';
   renderSides('paint'); renderSides('rust'); renderLic(); updatePhotoReq();
+  $('byCard').className = fs.assigned ? 'card hide' : 'card';
   fillSelect($('by'), users, fs.by);
   applyLineGate();
   show('form');
