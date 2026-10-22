@@ -36,7 +36,7 @@
   .stat span { font-size:12px; opacity:.85; }
   .stat.bad b { color:#ffb4b4; } .stat.warn b { color:#ffd58a; }
 
-  main { padding:12px 0 96px; }
+  main { padding:12px 0 calc(150px + env(safe-area-inset-bottom)); }
   .banner { display:flex; gap:10px; align-items:flex-start; background:var(--warn-soft); border:1px solid #f3d9a6; color:var(--warn); border-radius:12px; padding:10px 12px; font-size:13px; margin-bottom:10px; }
   .banner.ok { background:var(--ok-soft); border-color:#b7e1c4; color:var(--ok); }
 
@@ -193,7 +193,7 @@
     <div class="stats" id="stats">
       <div class="stat"><b id="sAll">–</b><span>งานค้าง</span></div>
       <div class="stat bad"><b id="sBad">–</b><span>เลยกำหนด</span></div>
-      <div class="stat warn"><b id="sSoon">–</b><span>ล่วงหน้า</span></div>
+      <div class="stat warn hide" id="sFutBox"><b id="sSoon">–</b><span>ล่วงหน้า</span></div>
     </div>
   </div>
 </header>
@@ -429,6 +429,9 @@ function show(view) {
 var SHOW_FROM_HOUR = 12; // งานของวันที่ Deadline จะโผล่ในรายการตั้งแต่เวลานี้ (เวลาไทย)
 function bkkHour() { return parseInt(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Bangkok', hour: '2-digit', hour12: false }).format(new Date()), 10) % 24; }
 function isFuture(j) { return j.days !== null && (j.days > 0 || (j.days === 0 && bkkHour() < SHOW_FROM_HOUR)); }
+// ช่างไม่เห็นงานล่วงหน้าเลย (กันปิดงานผิดวัน) เห็นเฉพาะโหมดผู้ดูแลที่กดปุ่มดูงานล่วงหน้า
+function hidden(j) { return isFuture(j) && !(isAdminMode && showFuture); }
+function pool() { return jobs.filter(function (j) { return !hidden(j); }); }
 function urgency(j) { return j.days === null ? 'none' : (j.days < 0 ? 'bad' : 'ok'); }
 function dueText(j) {
   if (!j.deadline) return 'ไม่ระบุ Deadline';
@@ -442,7 +445,7 @@ function sortJobs(a, b) { var x = a.days === null ? 1e9 : a.days, y = b.days ===
 function visibleJobs() {
   var q = $('q').value.trim().toLowerCase(), d = $('depot').value;
   return jobs.filter(function (j) {
-    if (!showFuture && isFuture(j)) return false;
+    if (hidden(j)) return false;
     if (mediaFilter && j.media !== mediaFilter) return false;
     if (d && j.depot !== d) return false;
     if (!q) return true;
@@ -481,8 +484,8 @@ function emptyState(box, text) { var e = el('div', 'empty'); e.appendChild(icon(
 function renderList() {
   var list = $('list'), vis = visibleJobs().sort(sortJobs);
   list.textContent = '';
-  $('shown').textContent = 'แสดง ' + vis.length + ' จาก ' + jobs.length + ' คัน · แตะรถเพื่อปิดงาน';
-  if (!vis.length) return emptyState(list, jobs.length ? (!showFuture && jobs.some(isFuture) && !$('q').value ? 'วันนี้ไม่มีงานค้าง · กด "ดูงานล่วงหน้า" เพื่อดูงานวันถัดไป' : 'ไม่พบรถตามที่ค้นหา') : 'ไม่มีงานค้างในรายการ · กด "เพิ่มงานนอกรายการ" ได้');
+  $('shown').textContent = 'แสดง ' + vis.length + ' จาก ' + pool().length + ' คัน · แตะรถเพื่อปิดงาน';
+  if (!vis.length) return emptyState(list, pool().length ? 'ไม่พบรถตามที่ค้นหา' : 'ไม่มีงานค้างในรายการ · กด "เพิ่มงานนอกรายการ" ได้');
   vis.forEach(function (j) {
     var u = urgency(j), b = el('button', 'job' + (u === 'bad' || u === 'warn' ? ' ' + u : '')); b.type = 'button';
     fillCar(b, j);
@@ -494,24 +497,24 @@ function renderList() {
 function renderStats() {
   var bad = 0, fut = 0, now = 0;
   jobs.forEach(function (j) { if (isFuture(j)) fut++; else { now++; if (urgency(j) === 'bad') bad++; } });
-  $('sAll').textContent = now; $('sBad').textContent = bad; $('sSoon').textContent = fut;
-  var fb = $('futureBtn'); fb.className = fut ? 'addoff' : 'addoff hide';
+  $('sAll').textContent = now; $('sBad').textContent = bad; $('sSoon').textContent = fut; $('sFutBox').className = isAdminMode ? 'stat warn' : 'stat warn hide'; $('stats').style.gridTemplateColumns = isAdminMode ? '' : 'repeat(2,1fr)';
+  var fb = $('futureBtn'); fb.className = (fut && isAdminMode) ? 'addoff' : 'addoff hide';
   fb.textContent = showFuture ? 'ซ่อนงานล่วงหน้า' : 'ดูงานล่วงหน้า (' + fut + ' คัน)';
 }
 function renderFilters() {
-  var counts = {}, box = $('mediaChips');
-  jobs.forEach(function (j) { if (j.media) counts[j.media] = (counts[j.media] || 0) + 1; });
+  var counts = {}, box = $('mediaChips'), pl = pool();
+  pl.forEach(function (j) { if (j.media) counts[j.media] = (counts[j.media] || 0) + 1; });
   if (mediaFilter && !counts[mediaFilter]) mediaFilter = '';
   box.textContent = '';
   [''].concat(Object.keys(counts).sort()).forEach(function (k) {
     var c = el('button', 'chip', k || 'ทั้งหมด'); c.type = 'button';
-    c.appendChild(el('small', '', String(k ? counts[k] : jobs.length)));
+    c.appendChild(el('small', '', String(k ? counts[k] : pl.length)));
     c.setAttribute('aria-pressed', k === mediaFilter);
     c.addEventListener('click', function () { mediaFilter = k; try { localStorage.setItem('installMedia', k); } catch (e) {} renderFilters(); renderList(); });
     box.appendChild(c);
   });
   var dep = $('depot'), curDep = dep.value, depots = {};
-  jobs.forEach(function (j) { if (j.depot && (!mediaFilter || j.media === mediaFilter)) depots[j.depot] = (depots[j.depot] || 0) + 1; });
+  pl.forEach(function (j) { if (j.depot && (!mediaFilter || j.media === mediaFilter)) depots[j.depot] = (depots[j.depot] || 0) + 1; });
   dep.textContent = ''; var all = el('option', '', 'ทุกอู่'); all.value = ''; dep.appendChild(all);
   Object.keys(depots).sort().forEach(function (k) { var o = el('option', '', k + ' (' + depots[k] + ')'); o.value = k; dep.appendChild(o); });
   dep.value = depots[curDep] ? curDep : '';
@@ -551,7 +554,7 @@ function blankState(j) {
     reasonNo: '', posNo: '', swapPlate: '', swapReason: '', swapNote: '', cancelReason: '', cancelNote: '' };
 }
 function openForm(j) {
-  if (busy) return;
+  if (busy || (isFuture(j) && !isAdminMode)) return;
   cur = { offlist: false, row: j.row, plate: j.plate, route: j.route, no: j.no, depot: canon(j.depot, DEPOTS), product: j.product, media: j.media, jobtype: j.jobtype || 'install',
           wrapType: j.wrapType, modelName: j.modelName, tech: j.tech, deadline: j.deadline, days: j.days, remark: j.remark, sid: null };
   startForm(j);
